@@ -1,0 +1,242 @@
+import java_cup.runtime.*;
+
+/* Preliminaries to set up and use the scanner.  */
+/*init with {: scanner.init();              :};*/
+scan with {: return super.getScanner().next_token(); :};
+
+
+parser code{:
+public static String Ambito = "",AmbitoForCall = "";
+
+    int bandera = 1;
+    int errores = 0;
+    String mensaje = new String("");
+
+    public void unrecovered_syntax_error(Symbol s)
+    {
+        mensaje += "Error de Sintaxis grave. Error Desconocido. Compilacion Detenida\n";
+    }
+
+    public void syntax_error(Symbol cur_token)
+    {
+        int linea = ( (Token)(cur_token.value) ).getFila();
+        int columna = ( (Token)(cur_token.value) ).getColumna();
+        
+        if(cur_token.sym == 0)
+        {
+            bandera = 0;
+            errores = errores + 1;
+            mensaje = "\nERROR SINTACTICO: Token desconocido, no se esperaba: (EOF), Linea: " + linea + ", Columna: " + columna + "\n" ;
+        }
+        else
+        {
+            bandera = 0;
+            errores = errores + 1;
+            mensaje += "\nERROR SINTACTICO: Token desconocido, no se esperaba: (" + ( (Token)(cur_token.value) ).getIdentificador() + "), Linea: " + linea + ", Columna: " + columna + "\n Sentencia incompleta";
+        }
+    }
+    
+    public String imprimirErrores(){
+        mensaje = "Se han encontrado " + errores + " errores" + mensaje;
+        return mensaje;
+    }
+
+:};
+/* Terminals (tokens returned by the scanner). */
+terminal            PUTTOK, PARIZQ, PARDER, ENDLINE, GETTOK, COMATOK, 
+					BOOLEANVALUE, POINTTOK, ASIGNATION, ANOTATION, ARRAYTOK, LETTER, INTOK, OUTTOK, INOUTTOK, FUNCIONTOK, RETURNTOK, OFTOK, 
+					ISTOK, BEGINTOK, ENDTOK, PROCEDURETOK, TYPETOK, INTEGERTOK, BOOLEANTOK, FLOATTOK, WHILETOK, LOOPTOK, FORTOK, RANGETOK, 
+					IFTOK, THENTOK, IDENTIFIER, ELSIFTOK, ELSETOK, OPSUMA, OPMULT, OPRELACIONAL, OPBOOL, EXITTOK, WHENTOK, UNDERSCORE;
+					
+terminal Integer 	NUMBER;
+
+/* Non terminals */
+/* put-get */
+non terminal            put, get, contentPutGet, valuePutGet, morePutGet;
+/*declaraciones */
+non terminal			declaracion, moreDeclaracion, declare, assign, typeDeclaracion, valueDeclaracion;
+/*expresiones aritmeticas */
+non terminal 			arithmetical, a, b, d, f;
+/*arrays */
+non terminal 			array, range, twoD, typeArray, arrayAsign, asignacion, arrayStart, moreArrayAsign, asign;
+/*Expresiones booleanas */
+non terminal 			expresion, moreBoolean, operacion, operando, booleanInit;
+/* If Statement */
+non terminal 			if, contentIf, elsif, else, conditionIf;
+/* loop statement */
+non terminal 			loop, contentLoop, exit;
+/* While statement */	
+non terminal 			while, conditionWhile, contentWhile;
+/* For Statement */
+non terminal 			for, contentFor, rangeParams;
+/* Function declaration */
+non terminal 			function, declaracionesFunction,paramsFunction, typeFunction, moreFunction, repeatFunction, returnExpect, returnVal, 
+						contentFunction, moreParamsFunction;
+/*Procedure declaration */
+non terminal 			procedure, paramsProcedure, innerParams, params, wichParams,  
+						moreProcedure, typeProcedure, declaracionesProcedure,  
+						innerProcedure, contentProcedure, moreParamsProcedure;
+/*the whole */
+non terminal			programInit, procedureInit, ifInit, programRecovery, llamadoMetodo, variables, moreVariable;
+
+start with programInit;
+/* The grammar */
+
+programInit ::= procedure programInit| function programInit| error programRecovery | ;
+programRecovery ::= declaracion programRecovery | put programRecovery | get programRecovery | ifInit programRecovery | for programRecovery | while programRecovery | 
+					loop programRecovery | programInit | arrayStart programRecovery;
+/* The grammar */
+/*----------------------Declaraciones */
+declaracion ::= IDENTIFIER moreDeclaracion declare assign ENDLINE |
+				IDENTIFIER moreDeclaracion declare assign error ;
+moreDeclaracion ::= COMATOK IDENTIFIER moreDeclaracion | ;
+declare ::= ANOTATION typeDeclaracion | ;
+typeDeclaracion ::= INTEGERTOK | BOOLEANTOK | FLOATTOK | error;
+valueDeclaracion ::= BOOLEANVALUE | arithmetical;
+assign ::= ASIGNATION valueDeclaracion | ;
+
+/*---------------------- Put Get */
+put ::= PUTTOK PARIZQ contentPutGet PARDER ENDLINE
+		|PUTTOK error contentPutGet PARDER ENDLINE
+		|PUTTOK PARIZQ contentPutGet error ENDLINE
+		|PUTTOK PARIZQ contentPutGet PARDER error
+		| PUTTOK PARIZQ PARDER ENDLINE;
+get ::= GETTOK PARIZQ IDENTIFIER PARDER ENDLINE
+		|GETTOK error IDENTIFIER PARDER ENDLINE
+		|GETTOK PARIZQ IDENTIFIER error ENDLINE
+		|GETTOK PARIZQ IDENTIFIER PARDER error;
+contentPutGet ::= valuePutGet morePutGet ;
+valuePutGet ::=  LETTER | BOOLEANVALUE | arithmetical ;
+morePutGet ::= COMATOK valuePutGet morePutGet | ;
+
+/*---------------------- Expresiones Aritmeticas */
+arithmetical ::= a b;
+a ::= f d;
+b ::= OPSUMA a b | ;
+d ::= OPMULT f d | ;
+f ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | PARIZQ arithmetical PARDER | error;
+
+/*---------------------- Expresiones Booleanas */
+booleanInit ::= expresion;
+expresion ::= PARIZQ expresion PARDER moreBoolean | operando moreBoolean | moreBoolean;
+moreBoolean ::= operacion expresion | ;
+operacion ::= OPBOOL | OPRELACIONAL | error;
+operando ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | BOOLEANVALUE;
+
+/*--------------------- IF */
+ifInit ::= if;
+if ::= IFTOK conditionIf THENTOK contentIf elsif else ENDTOK IFTOK ENDLINE 
+		|IFTOK conditionIf THENTOK contentIf elsif else error IFTOK ENDLINE
+		|IFTOK conditionIf THENTOK contentIf elsif else ENDTOK error ENDLINE
+		|IFTOK conditionIf THENTOK contentIf elsif else ENDTOK IFTOK error;
+contentIf ::= IDENTIFIER asign ENDLINE contentIf| put contentIf| get contentIf| for contentIf| arrayAsign contentIf| if contentIf | while contentIf | loop contentIf | ;
+elsif ::= ELSIFTOK conditionIf THENTOK contentIf elsif| ;
+else ::= ELSETOK contentIf | ;
+conditionIf ::= booleanInit;
+
+/*--------------------- FOR */
+for ::= FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE
+		|FORTOK error INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE
+		|FORTOK IDENTIFIER error rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE
+		|FORTOK IDENTIFIER INTOK rangeParams error rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE
+		|FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams error contentFor ENDTOK LOOPTOK ENDLINE
+		|FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor error LOOPTOK ENDLINE
+		|FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK error ENDLINE
+		|FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK error;
+rangeParams ::= arithmetical;
+contentFor ::= IDENTIFIER asign ENDLINE contentFor | put contentFor | get contentFor| for contentFor | arrayAsign contentFor| if contentFor | while contentFor | loop contentFor | ;
+
+/*--------------------- LOOP */
+loop ::= LOOPTOK contentLoop ENDTOK LOOPTOK ENDLINE
+		|LOOPTOK contentLoop error LOOPTOK ENDLINE
+		|LOOPTOK contentLoop ENDTOK error ENDLINE
+		|LOOPTOK contentLoop ENDTOK LOOPTOK error;
+contentLoop ::= IDENTIFIER asign ENDLINE contentLoop | put contentLoop | get contentLoop | for contentLoop | 
+				arrayAsign contentLoop | if contentLoop | while contentLoop | exit ENDLINE contentLoop | loop contentLoop | ;
+exit ::= EXITTOK WHENTOK booleanInit 
+			|EXITTOK error booleanInit;
+
+/*--------------------- Arrays */
+arrayStart ::= array | arrayAsign ;
+
+array ::= TYPETOK IDENTIFIER ISTOK ARRAYTOK range OFTOK typeArray ENDLINE
+			| TYPETOK error ISTOK ARRAYTOK range OFTOK typeArray ENDLINE
+			| TYPETOK IDENTIFIER error ARRAYTOK range OFTOK typeArray ENDLINE
+			| TYPETOK IDENTIFIER ISTOK error range OFTOK typeArray ENDLINE
+			| TYPETOK IDENTIFIER ISTOK ARRAYTOK range error typeArray ENDLINE
+			| TYPETOK IDENTIFIER ISTOK ARRAYTOK range OFTOK typeArray error;
+			
+range ::= PARIZQ arithmetical RANGETOK arithmetical twoD PARDER
+			| PARIZQ arithmetical RANGETOK arithmetical twoD error;
+twoD ::= COMATOK arithmetical RANGETOK arithmetical | ;
+typeArray ::= BOOLEANTOK | INTEGERTOK | FLOATTOK | error;
+
+arrayAsign ::= IDENTIFIER PARIZQ arithmetical moreArrayAsign PARDER asign ENDLINE
+				| IDENTIFIER PARIZQ arithmetical moreArrayAsign error asign ENDLINE
+				| IDENTIFIER PARIZQ arithmetical moreArrayAsign PARDER asign error;
+asign ::= ASIGNATION asignacion| ;
+moreArrayAsign ::= COMATOK arithmetical | ;
+asignacion ::= BOOLEANVALUE | arithmetical ;
+
+/*-------------------- while */
+while ::= WHILETOK conditionWhile LOOPTOK contentWhile ENDTOK LOOPTOK ENDLINE
+			| WHILETOK conditionWhile LOOPTOK contentWhile error LOOPTOK ENDLINE
+			| WHILETOK conditionWhile LOOPTOK contentWhile ENDTOK error ENDLINE
+			| WHILETOK conditionWhile LOOPTOK contentWhile ENDTOK LOOPTOK error;
+conditionWhile ::= booleanInit;
+contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get contentWhile| for contentWhile |
+					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
+
+/*-------------------- function */
+function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE
+			|FUNCIONTOK error paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE
+			|FUNCIONTOK IDENTIFIER paramsFunction returnExpect error declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE
+			|FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction error contentFunction error IDENTIFIER ENDLINE
+			|FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK error ENDLINE
+			|FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER error;
+declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | ;
+paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction PARDER 
+					| PARIZQ error moreFunction ANOTATION typeFunction moreParamsFunction PARDER
+					| PARIZQ IDENTIFIER moreFunction error typeFunction moreParamsFunction PARDER
+					| PARIZQ IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction error
+					| ;
+					
+moreParamsFunction ::= ENDLINE IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction 
+						| ENDLINE error moreFunction ANOTATION typeFunction moreParamsFunction
+						| ENDLINE IDENTIFIER moreFunction error typeFunction moreParamsFunction
+						| ;
+typeFunction ::= INTEGERTOK | BOOLEANTOK | FLOATTOK | error;
+moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
+repeatFunction ::= ENDLINE paramsFunction | ;
+returnExpect ::= RETURNTOK typeFunction | error;
+returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE | RETURNTOK arithmetical ENDLINE;
+contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFunction | get contentFunction| for contentFunction | loop contentFunction |
+					arrayAsign contentFunction| if contentFunction | while contentFunction  | returnVal contentFunction | ;
+
+/*---------------------- procedure */
+procedureInit ::= procedure;
+procedure ::= PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE
+				| PROCEDURETOK error paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE
+				| PROCEDURETOK IDENTIFIER paramsProcedure error declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE
+				| PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  error contentProcedure ENDTOK IDENTIFIER ENDLINE
+				| PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure error IDENTIFIER ENDLINE
+				| PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK error ENDLINE
+				| PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER error;
+declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;
+paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;
+innerParams ::= params moreParamsProcedure ;
+moreParamsProcedure ::= ENDLINE params moreParamsProcedure | ;
+params ::= IDENTIFIER moreProcedure ANOTATION wichParams typeProcedure | array
+			| IDENTIFIER moreProcedure error wichParams typeProcedure;
+wichParams ::= INTOK | OUTTOK | INOUTTOK | ;
+moreProcedure ::= COMATOK IDENTIFIER moreProcedure | ;
+innerProcedure ::= procedure innerProcedure | function innerProcedure | ;
+contentProcedure ::= IDENTIFIER asign ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
+					| arrayAsign contentProcedure| if contentProcedure | while contentProcedure | loop contentProcedure | ;
+typeProcedure ::= INTEGERTOK | BOOLEANTOK | FLOATTOK | error;
+
+/*----------------- conflicts --------------*/
+llamadoMetodo ::= PARIZQ variables PARDER |
+					PARIZQ PARDER ; 
+variables ::= BOOLEANVALUE moreVariable | arithmetical moreVariable | arithmetical | BOOLEANVALUE;
+moreVariable ::= COMATOK variables | error;
