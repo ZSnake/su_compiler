@@ -18,7 +18,7 @@ public class Whole_Main {
         //new File("C:\\Users\\Solid Snake\\Documents\\jflex-1.4.3\\ADA95\\try.txt"))
         Analizador al;
         try {
-            al = new Analizador(new lexer(new FileInputStream("C:\\Users\\Solid Snake\\Desktop\\trying.txt")));
+            al = new Analizador(new lexer(new FileInputStream("C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\trying.txt")));
             al.parse();
             System.out.println(al.imprimirErrores());
             
@@ -27,8 +27,7 @@ public class Whole_Main {
             System.err.println(ex.getMessage());
         } catch (Exception e){
             e.printStackTrace();
-        }
-        
+        }  
     }
 }
 

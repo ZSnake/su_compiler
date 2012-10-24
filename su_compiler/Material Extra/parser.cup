@@ -71,7 +71,7 @@ non terminal 			while, conditionWhile, contentWhile;
 non terminal 			for, contentFor, rangeParams;
 /* Function declaration */
 non terminal 			function, declaracionesFunction,paramsFunction, typeFunction, moreFunction, repeatFunction, returnExpect, returnVal, 
-						contentFunction, moreParamsFunction;
+						contentFunction, moreParamsFunction, typeParamFunction;
 /*Procedure declaration */
 non terminal 			procedure, paramsProcedure, innerParams, params, wichParams,  
 						moreProcedure, typeProcedure, declaracionesProcedure,  
@@ -194,11 +194,11 @@ function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracion
 			|FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction error contentFunction error IDENTIFIER ENDLINE
 			|FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK error ENDLINE
 			|FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER error;
-declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | ;
-paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction PARDER 
-					| PARIZQ error moreFunction ANOTATION typeFunction moreParamsFunction PARDER
-					| PARIZQ IDENTIFIER moreFunction error typeFunction moreParamsFunction PARDER
-					| PARIZQ IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction error
+declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
+paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER 
+					| PARIZQ error moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER
+					| PARIZQ IDENTIFIER moreFunction error typeParamFunction typeFunction moreParamsFunction PARDER
+					| PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction error
 					| ;
 					
 moreParamsFunction ::= ENDLINE IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction 
@@ -206,6 +206,7 @@ moreParamsFunction ::= ENDLINE IDENTIFIER moreFunction ANOTATION typeFunction mo
 						| ENDLINE IDENTIFIER moreFunction error typeFunction moreParamsFunction
 						| ;
 typeFunction ::= INTEGERTOK | BOOLEANTOK | FLOATTOK | error;
+typeParamFunction ::= INTOK | ;
 moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
 repeatFunction ::= ENDLINE paramsFunction | ;
 returnExpect ::= RETURNTOK typeFunction | error;
