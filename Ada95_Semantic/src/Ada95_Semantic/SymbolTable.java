@@ -70,4 +70,48 @@ public class SymbolTable{
 		}
 	}
         
+        public Symbol get(Object oid){
+		String soid=(String)oid;
+		soid = soid.toLowerCase();
+		Symbol found = new Symbol();
+		String [] idSplit = soid.split("\\.");
+		for(SymbolTable t=this; t != null; t= t.getParent()){
+			found=t.getTable().get(idSplit[0]);
+			if(found != null){
+				if(idSplit.length == 1) {
+                                    return found;
+                                }
+				else {
+                                    break;
+                                }
+			}
+		}
+		if (found == null) {	
+			return null;
+                }			
+		if(!(found.type instanceof RecordType)) {
+			return null;
+                }	
+		RecordType f;
+		for(int i=1; i < idSplit.length-1; i++){
+			f=(RecordType)found.type;		
+			found=f.symbolTable.getTable().get(idSplit[i]);
+			if(found != null){
+				if(!(found.type instanceof RecordType)) {
+					return null;
+                                }
+			}else{
+				return null;
+			}
+			
+		}
+		f=(RecordType)found.type;
+		found=f.symbolTable.getTable().get(idSplit[idSplit.length-1]);
+		return found;
+	}
+
+	public void addChild(SymbolTable child){
+		this.children.add(child);
+	}
+        
 }
