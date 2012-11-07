@@ -1,6 +1,7 @@
 package Ada95_Semantic;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class RecordType extends Type{
 	public SymbolTable symbolTable;
@@ -12,46 +13,65 @@ public class RecordType extends Type{
 	public RecordType(String name, SymbolTable st){
 		this.name = name;
 		this.symbolTable = st;
-		ArrayList<Type> product = new ArrayList<Type>();
-		for(Symbol e: st.getTable().values())
-			product.add(e.type);
-		this.product = product;
-                for(Type t: this.product)
-                        this.width += t.getWidth();
+		product = new ArrayList<>();
+		for(Symbol e: st.getTable().values()) {
+                    product.add(e.type);
+                }
+		//this.product = product;
+                for(Type t: this.product) {
+                    this.width += t.getWidth();
+                }
 	}	
 	
 	public Type getComponentType(Object name){
 		Symbol component= this.symbolTable.get(name);
-		if (component != null)
+		if (component != null){
 			return component.type;
-		else
+                }
+                else{
 			return null;
+                }
 	}
 
-	public String toString(){
-		return this.name;
-	}
-
-	public boolean isPrimitive(){
-		return false;
-	}
-
+    @Override
 	public boolean equals(Object o){
-		if(o == null)
+		if(o == null){
 			return false;
-		if(!(o instanceof RecordType))
+                }
+		if(!(o instanceof RecordType)){
 			return false;
-		if(o == this)
+                }
+		if(o == this){
 			return true;
+                }
 		RecordType temp = (RecordType) o;
 		return this.name.equalsIgnoreCase(temp.name);
 	}
 	
+    @Override
 	public boolean isNumeric(){
 		return false;
 	}
 
+    @Override
 	public boolean isDiscrete(){
 		return false;
 	}
+    
+    @Override
+	public boolean isPrimitive(){
+		return false;
+	}
+    
+    @Override
+	public String toString(){
+		return this.name;
+	}
+        
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.symbolTable);
+        return hash;
+    }
 }
