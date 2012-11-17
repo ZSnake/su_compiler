@@ -2,7 +2,7 @@ package Ada95_Semantic;
 
 import java.util.HashSet;
 
-public class Symbol{
+public class VariableSymbol{
 	//Tipo del simbolo
 	public Type type;
 	//Direccion en memoria relativa (hexadecimal)
@@ -22,33 +22,33 @@ public class Symbol{
 		this.nextUse = 0;
 	}
         
-	public Symbol(){
+	public VariableSymbol(){
 		this.type = null;
 		this.address = 0x0;
                 postData();
 	}
 
-	public Symbol(Type t){
+	public VariableSymbol(Type t){
 		this.type = t;
 		this.address = 0x0;
 		this.constant = false;
                 postData();
 	}
 	
-	public Symbol(Type t, boolean c){
+	public VariableSymbol(Type t, boolean c){
 		this.type = t;
 		this.address = 0x0;
 		this.constant = c;
                 postData();
 	}
 
-	public Symbol(Type t, long a){
+	public VariableSymbol(Type t, long a){
 		this.type = t;
 		this.address = a;
                 postData();
 	}
 	
-	public Symbol(Type t, boolean cons, String initialPlace){
+	public VariableSymbol(Type t, boolean cons, String initialPlace){
 		this.type = t;
 		this.address = 0x0;
 		this.constant = cons;

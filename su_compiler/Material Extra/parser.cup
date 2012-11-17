@@ -1,5 +1,5 @@
 import java_cup.runtime.*;
-
+import Ada95_Semantic.*;
 /* Preliminaries to set up and use the scanner.  */
 /*init with {: scanner.init();              :};*/
 scan with {: return super.getScanner().next_token(); :};
@@ -10,6 +10,7 @@ public static String Ambito = "",AmbitoForCall = "";
 
     int bandera = 1;
     int errores = 0;
+	SymbolTable currentScope = null; //El Scope actual, por cada metodo scope nuevo se hará una nueva tabla de simbolos y las variables declaradas en el seran ingresadas como symbol
     String mensaje = new String("");
 
     public void unrecovered_syntax_error(Symbol s)

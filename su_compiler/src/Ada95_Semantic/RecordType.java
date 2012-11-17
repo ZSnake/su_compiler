@@ -14,7 +14,7 @@ public class RecordType extends Type{
 		this.name = name;
 		this.symbolTable = st;
 		product = new ArrayList<>();
-		for(Symbol e: st.getTable().values()) {
+		for(VariableSymbol e: st.getTable().values()) {
                     product.add(e.type);
                 }
 		//this.product = product;
@@ -24,7 +24,7 @@ public class RecordType extends Type{
 	}	
 	
 	public Type getComponentType(Object name){
-		Symbol component= this.symbolTable.get(name);
+		VariableSymbol component= this.symbolTable.get(name);
 		if (component != null){
 			return component.type;
                 }

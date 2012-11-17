@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 
 public class SymbolTable{
 	//Tabla para el scope actual
-	private LinkedHashMap<String, Symbol> table;
+	private LinkedHashMap<String, VariableSymbol> table;
 	//Scope inmediato foraneo
 	public SymbolTable parent;
 	//Direccion relativa
@@ -51,11 +51,11 @@ public class SymbolTable{
 		return this.parent;
 	}
 	
-	public LinkedHashMap<String, Symbol> getTable(){
+	public LinkedHashMap<String, VariableSymbol> getTable(){
 		return this.table;
 	}	
 
-	public boolean put(Object oid, Symbol type){
+	public boolean put(Object oid, VariableSymbol type){
 		String soid;
                 soid =(String)oid;
 		soid = soid.toLowerCase();
@@ -70,10 +70,10 @@ public class SymbolTable{
 		}
 	}
         
-        public Symbol get(Object oid){
+        public VariableSymbol get(Object oid){
 		String soid=(String)oid;
 		soid = soid.toLowerCase();
-		Symbol found = new Symbol();
+		VariableSymbol found = new VariableSymbol();
 		String [] idSplit = soid.split("\\.");
 		for(SymbolTable t=this; t != null; t= t.getParent()){
 			found=t.getTable().get(idSplit[0]);
