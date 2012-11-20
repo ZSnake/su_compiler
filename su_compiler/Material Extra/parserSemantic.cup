@@ -1,0 +1,170 @@
+import java_cup.runtime.*;
+import Ada95_Semantic.*;
+/* Preliminaries to set up and use the scanner.  */
+/*init with {: scanner.init();              :};*/
+scan with {: return super.getScanner().next_token(); :};
+
+action code{: 
+	public SymbolTable currentScope = null;
+:};
+
+/* Terminals (tokens returned by the scanner). */
+terminal            PUTTOK, PARIZQ, PARDER, ENDLINE, GETTOK, COMATOK, 
+					BOOLEANVALUE, POINTTOK, ASIGNATION, ANOTATION, ARRAYTOK, LETTER, INTOK, OUTTOK, INOUTTOK, FUNCIONTOK, RETURNTOK, OFTOK, 
+					ISTOK, BEGINTOK, ENDTOK, PROCEDURETOK, TYPETOK, INTEGERTOK, BOOLEANTOK, FLOATTOK, WHILETOK, LOOPTOK, FORTOK, RANGETOK, 
+					IFTOK, THENTOK, IDENTIFIER, ELSIFTOK, ELSETOK, OPSUMA, OPMULT, OPRELACIONAL, OPBOOL, EXITTOK, WHENTOK, UNDERSCORE;
+					
+terminal Integer 	NUMBER;
+
+/* Non terminals */
+/* put-get */
+non terminal            put, get, contentPutGet, valuePutGet, morePutGet;
+/*declaraciones */
+non terminal			declaracion, moreDeclaracion, declare, assign, typeDeclaracion, valueDeclaracion;
+/*expresiones aritmeticas */
+non terminal 			arithmetical, a, b, d, f;
+/*arrays */
+non terminal 			array, range, twoD, typeArray, arrayAsign, asignacion, arrayStart, moreArrayAsign, asign;
+/*Expresiones booleanas */
+non terminal 			expresion, moreBoolean, operacion, operando, booleanInit;
+/* If Statement */
+non terminal 			if, contentIf, elsif, else, conditionIf;
+/* loop statement */
+non terminal 			loop, contentLoop, exit;
+/* While statement */	
+non terminal 			while, conditionWhile, contentWhile;
+/* For Statement */
+non terminal 			for, contentFor, rangeParams;
+/* Function declaration */
+non terminal 			function, declaracionesFunction,paramsFunction, typeFunction, moreFunction, repeatFunction, returnExpect, returnVal, 
+						contentFunction, moreParamsFunction, typeParamFunction;
+/*Procedure declaration */
+non terminal 			procedure, paramsProcedure, innerParams, params, wichParams,  
+						moreProcedure, typeProcedure, declaracionesProcedure,  
+						innerProcedure, contentProcedure, moreParamsProcedure;
+/*the whole */
+non terminal			programInit, procedureInit, ifInit, programRecovery, llamadoMetodo, variables, moreVariable;
+
+start with programInit;
+/* The grammar */
+
+programInit ::= procedure programInit| function programInit| error programRecovery | ;
+programRecovery ::= declaracion programRecovery | put programRecovery | get programRecovery | ifInit programRecovery | for programRecovery | while programRecovery | 
+					loop programRecovery | programInit | arrayStart programRecovery;
+/* The grammar */
+/*----------------------Declaraciones */
+declaracion ::= IDENTIFIER moreDeclaracion declare assign ENDLINE;
+moreDeclaracion ::= COMATOK IDENTIFIER moreDeclaracion | ;
+declare ::= ANOTATION typeDeclaracion | ;
+typeDeclaracion ::= INTEGERTOK | BOOLEANTOK | FLOATTOK;
+valueDeclaracion ::= BOOLEANVALUE | arithmetical;
+assign ::= ASIGNATION valueDeclaracion | ;
+
+/*---------------------- Put Get */
+put ::= PUTTOK PARIZQ contentPutGet PARDER ENDLINE
+		| PUTTOK PARIZQ PARDER ENDLINE;
+get ::= GETTOK PARIZQ IDENTIFIER PARDER ENDLINE;
+contentPutGet ::= valuePutGet morePutGet ;
+valuePutGet ::=  LETTER | BOOLEANVALUE | arithmetical ;
+morePutGet ::= COMATOK valuePutGet morePutGet | ;
+
+/*---------------------- Expresiones Aritmeticas */
+arithmetical ::= a b;
+a ::= f d;
+b ::= OPSUMA a b | ;
+d ::= OPMULT f d | ;
+f ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | PARIZQ arithmetical PARDER;
+
+/*---------------------- Expresiones Booleanas */
+booleanInit ::= expresion;
+expresion ::= PARIZQ expresion PARDER moreBoolean | operando moreBoolean | moreBoolean;
+moreBoolean ::= operacion expresion | ;
+operacion ::= OPBOOL | OPRELACIONAL | error;
+operando ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | BOOLEANVALUE;
+
+/*--------------------- IF */
+ifInit ::= if;
+if ::= IFTOK conditionIf THENTOK contentIf elsif else ENDTOK IFTOK ENDLINE;
+contentIf ::= IDENTIFIER asign ENDLINE contentIf| put contentIf| get contentIf| for contentIf| arrayAsign contentIf| if contentIf | while contentIf | loop contentIf | ;
+elsif ::= ELSIFTOK conditionIf THENTOK contentIf elsif| ;
+else ::= ELSETOK contentIf | ;
+conditionIf ::= booleanInit;
+
+/*--------------------- FOR */
+for ::= FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE;
+rangeParams ::= arithmetical;
+contentFor ::= IDENTIFIER asign ENDLINE contentFor | put contentFor | get contentFor| for contentFor | arrayAsign contentFor| if contentFor | while contentFor | loop contentFor | ;
+
+/*--------------------- LOOP */
+loop ::= LOOPTOK contentLoop ENDTOK LOOPTOK ENDLINE;
+contentLoop ::= IDENTIFIER asign ENDLINE contentLoop | put contentLoop | get contentLoop | for contentLoop | 
+				arrayAsign contentLoop | if contentLoop | while contentLoop | exit ENDLINE contentLoop | loop contentLoop | ;
+exit ::= EXITTOK WHENTOK booleanInit 
+			|EXITTOK error booleanInit;
+
+/*--------------------- Arrays */
+arrayStart ::= array | arrayAsign ;
+
+array ::= TYPETOK IDENTIFIER ISTOK ARRAYTOK range OFTOK typeArray ENDLINE;
+			
+range ::= PARIZQ arithmetical RANGETOK arithmetical twoD PARDER;
+twoD ::= COMATOK arithmetical RANGETOK arithmetical | ;
+typeArray ::= BOOLEANTOK | INTEGERTOK | FLOATTOK;
+
+arrayAsign ::= IDENTIFIER PARIZQ arithmetical moreArrayAsign PARDER asign ENDLINE;
+asign ::= ASIGNATION asignacion| ;
+moreArrayAsign ::= COMATOK arithmetical | ;
+asignacion ::= BOOLEANVALUE | arithmetical ;
+
+/*-------------------- while */
+while ::= WHILETOK conditionWhile LOOPTOK contentWhile ENDTOK LOOPTOK ENDLINE;
+conditionWhile ::= booleanInit;
+contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get contentWhile| for contentWhile |
+					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
+
+/*-------------------- function */
+function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE;
+declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
+paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
+					
+moreParamsFunction ::= ENDLINE IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction | ;
+typeFunction ::= INTEGERTOK | BOOLEANTOK | FLOATTOK | error;
+typeParamFunction ::= INTOK | ;
+moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
+repeatFunction ::= ENDLINE paramsFunction | ;
+returnExpect ::= RETURNTOK typeFunction;
+returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE | RETURNTOK arithmetical ENDLINE;
+contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFunction | get contentFunction| for contentFunction | loop contentFunction |
+					arrayAsign contentFunction| if contentFunction | while contentFunction  | returnVal contentFunction | ;
+
+/*---------------------- procedure */
+procedureInit ::= procedure;
+procedure ::= PROCEDURETOK IDENTIFIER:i paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE
+{:
+	System.out.println("it's entering here nigga");
+	String id = i.toString();
+	if(currentScope != null){
+		SymbolTable newScope = new SymbolTable(currentScope, id);
+		currentScope.addChild(newScope);
+		currentScope = newScope;
+	}else{
+		currentScope = new SymbolTable(currentScope, id);
+	}
+:};
+declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;
+paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;
+innerParams ::= params moreParamsProcedure ;
+moreParamsProcedure ::= ENDLINE params moreParamsProcedure | ;
+params ::= IDENTIFIER moreProcedure ANOTATION wichParams typeProcedure | array;
+wichParams ::= INTOK | OUTTOK | INOUTTOK | ;
+moreProcedure ::= COMATOK IDENTIFIER moreProcedure | ;
+innerProcedure ::= procedure innerProcedure | function innerProcedure | ;
+contentProcedure ::= IDENTIFIER asign ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
+					| arrayAsign contentProcedure| if contentProcedure | while contentProcedure | loop contentProcedure | ;
+typeProcedure ::= INTEGERTOK | BOOLEANTOK | FLOATTOK;
+
+/*----------------- conflicts --------------*/
+llamadoMetodo ::= PARIZQ variables PARDER |
+					PARIZQ PARDER ; 
+variables ::= BOOLEANVALUE moreVariable | arithmetical moreVariable | arithmetical | BOOLEANVALUE;
+moreVariable ::= COMATOK variables;
