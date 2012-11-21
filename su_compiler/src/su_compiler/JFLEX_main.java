@@ -12,6 +12,6 @@ import java.io.File;
  */
 public class JFLEX_main {
     public static void main (String args[]){
-        JFlex.Main.generate(new File("C:\\Users\\Solid Snake\\Documents\\jflex-1.4.3\\ADA95\\lexterAda.flex"));
+        JFlex.Main.generate(new File("C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\lexterAdaSemantic.flex"));
     }
 }

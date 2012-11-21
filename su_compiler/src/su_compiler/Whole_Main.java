@@ -20,8 +20,9 @@ public class Whole_Main {
         AnalizadorSemantic als;
         try {
             lexer l = new lexer(new FileInputStream("C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\trying.txt"));
+            lexerSemantic l2 = new lexerSemantic(new FileInputStream("C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\trying.txt"));
             al = new Analizador(l);
-            als = new AnalizadorSemantic(l);
+            als = new AnalizadorSemantic(l2);
             al.parse();
             als.parse();
             
