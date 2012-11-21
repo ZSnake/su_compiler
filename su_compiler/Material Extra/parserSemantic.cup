@@ -123,7 +123,7 @@ contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get c
 					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
 
 /*-------------------- function */
-function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE;
+function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE {: System.out.println("en funcion");:} ;
 declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
 paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
 					
@@ -139,7 +139,7 @@ contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFuncti
 
 /*---------------------- procedure */
 procedureInit ::= procedure;
-procedure ::= PROCEDURETOK IDENTIFIER:i paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE
+procedure ::= PROCEDURETOK IDENTIFIER:i paramsProcedure ISTOK  declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE
 {:
 	System.out.println("it's entering here nigga");
 	String id = i.toString();

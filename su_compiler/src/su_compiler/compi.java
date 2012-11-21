@@ -339,7 +339,13 @@ public class compi extends javax.swing.JFrame {
                         guardarArchivo();
                     lexer scanner = new lexer(new FileInputStream(currentFile));
                     al = new Analizador(scanner);
+                    als = new AnalizadorSemantic(scanner);
                     al.parse();
+                    als.parse();
+                    if(als.action_obj.currentScope != null)
+                        JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
+                    else    
+                        JOptionPane.showMessageDialog(this, "):", "Wach out!", 0);
                     txtOutput.setText("");
                     txtOutput.append(al.imprimirErrores() + "\n ---------------------------------------\n");
                     txtOutput.append("Se han encontrado " + scanner.contadorErroresLexicos + " errores lexicos\n");
@@ -360,6 +366,7 @@ public class compi extends javax.swing.JFrame {
                     als = new AnalizadorSemantic(scanner);
                     al.parse();
                     als.parse();
+                    
                     if(als.action_obj.currentScope != null)
                         JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
                     else    
@@ -369,6 +376,7 @@ public class compi extends javax.swing.JFrame {
                     txtOutput.append("Se han encontrado " + scanner.contadorErroresLexicos + " errores lexicos\n");
                     txtOutput.append(scanner.erroresLexicos);
                     txtOutput.append("Fin de analisis " + "\n ---------------------------------------\n");
+                    
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(this, "ERROR: El archivo que desea analizar no existe", "Wach out!", 0);
                     e.printStackTrace();

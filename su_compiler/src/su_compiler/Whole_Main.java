@@ -17,9 +17,14 @@ public class Whole_Main {
     public static void main (String args[]){
         //new File("C:\\Users\\Solid Snake\\Documents\\jflex-1.4.3\\ADA95\\try.txt"))
         Analizador al;
+        AnalizadorSemantic als;
         try {
-            al = new Analizador(new lexer(new FileInputStream("C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\trying.txt")));
+            lexer l = new lexer(new FileInputStream("C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\trying.txt"));
+            al = new Analizador(l);
+            als = new AnalizadorSemantic(l);
             al.parse();
+            als.parse();
+            
             System.out.println(al.imprimirErrores());
             
             
