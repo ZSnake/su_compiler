@@ -114,4 +114,15 @@ public class SymbolTable{
 		this.children.add(child);
 	}
         
+        public void printTree(SymbolTable actual, int level){
+        for (int i = 0; i <= level; i++) {
+            System.out.print("-");
+        }
+        System.out.println(actual.id);
+        level++;
+        for (int i = 0; i < actual.children.size(); i++) {
+            printTree(actual.children.get(i), level);
+        }
+    }
+        
 }

@@ -342,10 +342,10 @@ public class compi extends javax.swing.JFrame {
                     als = new AnalizadorSemantic(scanner);
                     al.parse();
                     als.parse();
-                    if(als.action_obj.currentScope != null)
-                        JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
-                    else    
-                        JOptionPane.showMessageDialog(this, "):", "Wach out!", 0);
+//                    if(als.action_obj.currentScope != null)
+//                        JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
+//                    else    
+//                        JOptionPane.showMessageDialog(this, "):", "Wach out!", 0);
                     txtOutput.setText("");
                     txtOutput.append(al.imprimirErrores() + "\n ---------------------------------------\n");
                     txtOutput.append("Se han encontrado " + scanner.contadorErroresLexicos + " errores lexicos\n");
@@ -365,12 +365,12 @@ public class compi extends javax.swing.JFrame {
                     al = new Analizador(scanner);
                     als = new AnalizadorSemantic(scanner);
                     al.parse();
-                    als.parse();
+                    //als.parse();
                     
-                    if(als.action_obj.currentScope != null)
-                        JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
-                    else    
-                        JOptionPane.showMessageDialog(this, "):", "Wach out!", 0);
+//                    if(als.action_obj.currentScope != null)
+//                        JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
+//                    else    
+//                        JOptionPane.showMessageDialog(this, "):", "Wach out!", 0);
                     txtOutput.setText("");
                     txtOutput.append(al.imprimirErrores() + "\n ---------------------------------------\n");
                     txtOutput.append("Se han encontrado " + scanner.contadorErroresLexicos + " errores lexicos\n");

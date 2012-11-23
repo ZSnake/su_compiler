@@ -123,7 +123,17 @@ contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get c
 					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
 
 /*-------------------- function */
-function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE {: System.out.println("en funcion");:} ;
+function ::= FUNCIONTOK IDENTIFIER:i
+{:
+	String id = i.toString();
+	SymbolTable temp = new SymbolTable(currentScope, id);
+	currentScope.addChild(temp);
+	currentScope = temp;
+:}
+ paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE 
+{: 
+	currentScope = currentScope.parent;
+:} ;
 declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
 paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
 					
@@ -139,9 +149,7 @@ contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFuncti
 
 /*---------------------- procedure */
 procedureInit ::= procedure;
-procedure ::= PROCEDURETOK IDENTIFIER:i paramsProcedure ISTOK  declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE
-{:
-	System.out.println("it's entering here nigga");
+procedure ::= PROCEDURETOK IDENTIFIER:i {:
 	String id = i.toString();
 	if(currentScope != null){
 		SymbolTable newScope = new SymbolTable(currentScope, id);
@@ -150,7 +158,16 @@ procedure ::= PROCEDURETOK IDENTIFIER:i paramsProcedure ISTOK  declaracionesProc
 	}else{
 		currentScope = new SymbolTable(currentScope, id);
 	}
+:} paramsProcedure ISTOK  declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE 
+{:
+	if(currentScope.parent != null){
+		currentScope = currentScope.parent;
+	}else{
+		System.out.println("Terminado, se imprimira el arbol: ");
+		currentScope.printTree(currentScope, 0);
+	}
 :};
+
 declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;
 paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;
 innerParams ::= params moreParamsProcedure ;

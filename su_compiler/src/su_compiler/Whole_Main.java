@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
  *
  * @author Solid Snake
@@ -25,7 +26,7 @@ public class Whole_Main {
             als = new AnalizadorSemantic(l2);
             al.parse();
             als.parse();
-            
+            System.out.println("----------------------------");
             System.out.println(al.imprimirErrores());
             
             

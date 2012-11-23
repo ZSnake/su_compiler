@@ -1,13 +1,26 @@
 procedure f1 is      
    -- A small function.
-   function Sumsqr(X, Y: Integer) return integer is
+   procedure f2 is
         function sums(x, y: integer) return integer is
             begin
                  return this+this;
             end sums;
+			procedure f5 is
+			begin
+				something;
+			end f5;
    begin
-      return X*X + Y*Y;
+      something;
    end sumsqqr;
+   
+   procedure f3 is
+		procedure f4 is
+		begin
+			something;
+		end f4;
+   begin
+	something;
+   end f3;
    
 begin
 	something;
