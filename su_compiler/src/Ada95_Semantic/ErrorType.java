@@ -2,7 +2,7 @@ package Ada95_Semantic;
 
 import java.util.ArrayList;
 
-public class ErrorType extends PrimitiveType{
+public class ErrorType extends Type{
 	public ErrorType(Type expectedType){
 		this.product = new ArrayList<>();
 		this.product.add(expectedType);
@@ -56,6 +56,11 @@ public class ErrorType extends PrimitiveType{
     public int hashCode() {
         int hash = 3;
         return hash;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
 

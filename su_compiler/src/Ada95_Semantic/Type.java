@@ -1,20 +1,16 @@
 package Ada95_Semantic;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class Type{
 	// Tamano que se ocupa para el tipo especifico
 	protected int width;
 	// Productos representativos del mismo
-	protected ArrayList<Type> product;
+	protected List<Type> product;
 	// Nombre del tipo
 	public String name;
-	
-	// Constantes de los tamanos
-	public static final int INTEGER_WIDTH = 4;
-	public static final int FLOAT_WIDTH = 4;
-	public static final int BOOLEAN_WIDTH = 1;
 	
 	public Type(String name){
 		this.product = new ArrayList<>();
@@ -94,7 +90,7 @@ public abstract class Type{
 	}
 
 	public ArrayList<Type> getProduct(){
-		return product;
+		return (ArrayList<Type>) product;
 	}
 	
     @Override
@@ -112,5 +108,5 @@ public abstract class Type{
 	public abstract String toString();
 	public abstract boolean isPrimitive();
 	public abstract boolean isNumeric();
-	public abstract boolean isDiscrete();	
+	public abstract boolean isDiscrete();
 }

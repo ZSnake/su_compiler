@@ -1,6 +1,6 @@
 package Ada95_Semantic;
 
-public class StringType extends PrimitiveType{
+public class StringType extends Type{
 	 //String length
 	 public StringType(int length){
                 super();
@@ -40,5 +40,10 @@ public class StringType extends PrimitiveType{
     public int hashCode() {
         int hash = 7;
         return hash;
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

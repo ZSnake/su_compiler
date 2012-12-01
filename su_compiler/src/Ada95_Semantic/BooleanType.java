@@ -1,47 +1,49 @@
 package Ada95_Semantic;
 
-public class BooleanType extends PrimitiveType{
-        public BooleanType(){
-                super();
-                this.width = Type.BOOLEAN_WIDTH;
-		this.name = "boolean";
-        }
-        
-	public BooleanType(String name){
-                super();
-    	        this.width = Type.BOOLEAN_WIDTH;
-		this.name = name;
-        }
+public class BooleanType extends Type{
+    public BooleanType(){
+            super();
+            this.width = 1;
+            this.name = "boolean";
+    }
+
+    public BooleanType(String name){
+            super();
+            this.width = 1;
+            this.name = name;
+    }
 
     @Override
-        public boolean equals(Object o){
-                if(o == null) {
-                    return false;
-                }
-                if(!(o instanceof BooleanType)) {
-                    return false;
-                }
-                if(o == this) {
-                    return true;
-                }	
-                return this.name.equalsIgnoreCase(((BooleanType)o).name);
-        }
-	
-    @Override
-	public boolean isNumeric(){
-		return false;
-	}
+    public boolean equals(Object o){
+            if(o == null || !(o instanceof BooleanType)) {
+                return false;
+            }
+            else if(o == this) {
+                return true;
+            }
+            return this.name.equalsIgnoreCase(((BooleanType)o).name);
+    }
 
     @Override
-	public boolean isDiscrete(){
-		return true;
-	}
-    
+    public boolean isPrimitive() {
+        return true;
+    }
+
     @Override
-        public String toString(){
-		String n = (name.equalsIgnoreCase("boolean"))? "" : name+":";
-                return n + "Boolean";
-        }
+    public boolean isNumeric(){
+            return false;
+    }
+
+    @Override
+    public boolean isDiscrete(){
+            return true;
+    }
+
+    @Override
+    public String toString(){
+            String n = (name.equalsIgnoreCase("boolean"))? "" : name+":";
+            return n + "Boolean";
+    }
 
     @Override
     public int hashCode() {

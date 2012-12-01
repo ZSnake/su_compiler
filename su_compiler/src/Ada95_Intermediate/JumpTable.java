@@ -1,4 +1,4 @@
-package Ada95_Semantic;
+package Ada95_Intermediate;
 
 import java.util.ArrayList;
 

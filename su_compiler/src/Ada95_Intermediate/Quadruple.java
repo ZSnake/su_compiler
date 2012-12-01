@@ -1,4 +1,4 @@
-package Ada95_Semantic;
+package Ada95_Intermediate;
 
 public class Quadruple {
     //Falta hacer esta onda que es para el codigo intermedio
