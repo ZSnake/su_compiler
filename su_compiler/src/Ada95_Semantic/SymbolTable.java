@@ -58,7 +58,7 @@ public class SymbolTable{
 
 	public boolean put(Object oid, VariableSymbol type){
 		String soid;
-                soid =oid.toString();
+                soid =((Token)oid).getIdentificador();
 		soid = soid.toLowerCase();
 		if(!(this.table.containsKey(soid))){
 			type.address = this.relAddress;
@@ -72,7 +72,7 @@ public class SymbolTable{
 	}
         
         public VariableSymbol get(Object oid){
-		String soid=(String)oid;
+		String soid=oid.toString();
 		soid = soid.toLowerCase();
 		VariableSymbol found = new VariableSymbol();
 		String [] idSplit = soid.split("\\.");

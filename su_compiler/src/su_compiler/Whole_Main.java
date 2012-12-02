@@ -26,6 +26,7 @@ public class Whole_Main {
             als = new AnalizadorSemantic(l2);
             al.parse();
             als.parse();
+            System.out.println();
             System.out.println("----------------------------");
             System.out.println(al.imprimirErrores());
             
