@@ -1,11 +1,15 @@
 import java_cup.runtime.*;
 import Ada95_Semantic.*;
+import java.util.ArrayList;
 /* Preliminaries to set up and use the scanner.  */
 /*init with {: scanner.init();              :};*/
 scan with {: return super.getScanner().next_token(); :};
 
 action code{: 
 	public SymbolTable currentScope = null;
+	public ArrayList<VariableSymbol> multipleDeclaration = new ArrayList(); 
+	public ArrayList oids = new ArrayList();
+	public Type currentType = null;
 :};
 
 /* Terminals (tokens returned by the scanner). */
@@ -53,10 +57,36 @@ programRecovery ::= declaracion programRecovery | put programRecovery | get prog
 					loop programRecovery | programInit | arrayStart programRecovery;
 /* The grammar */
 /*----------------------Declaraciones */
-declaracion ::= IDENTIFIER moreDeclaracion declare assign ENDLINE;
-moreDeclaracion ::= COMATOK IDENTIFIER moreDeclaracion | ;
+declaracion ::= IDENTIFIER:i {:
+	 
+	VariableSymbol temporal = new VariableSymbol(currentType);
+	temporal.id = ((Token)i).getIdentificador();
+	temporal.type = currentType;
+	oids.add(i);
+	multipleDeclaration.add(temporal);
+:}
+moreDeclaracion declare assign ENDLINE {:
+	for(int j = 0; j < multipleDeclaration.size(); j++){
+		Object temp1 = oids.get(j);
+		VariableSymbol temp2 = multipleDeclaration.get(j);
+		temp2.type = currentType;
+		currentScope.put(temp1, temp2);
+	}
+	multipleDeclaration = new ArrayList();
+	currentType = null;
+:};
+moreDeclaracion ::= COMATOK IDENTIFIER:i 
+{:
+	VariableSymbol temporal = new VariableSymbol(currentType);
+	temporal.id = ((Token)i).getIdentificador();
+	oids.add(i);
+	multipleDeclaration.add(temporal);
+:}	
+moreDeclaracion | ;
 declare ::= ANOTATION typeDeclaracion | ;
-typeDeclaracion ::= INTEGERTOK | BOOLEANTOK | FLOATTOK;
+typeDeclaracion ::= INTEGERTOK {:currentType = new IntegerType();:}
+| BOOLEANTOK {:currentType = new BooleanType();:}
+| FLOATTOK{:currentType = new FloatType();:};
 valueDeclaracion ::= BOOLEANVALUE | arithmetical;
 assign ::= ASIGNATION valueDeclaracion | ;
 
@@ -79,7 +109,7 @@ f ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | 
 booleanInit ::= expresion;
 expresion ::= PARIZQ expresion PARDER moreBoolean | operando moreBoolean | moreBoolean;
 moreBoolean ::= operacion expresion | ;
-operacion ::= OPBOOL | OPRELACIONAL | error;
+operacion ::= OPBOOL | OPRELACIONAL;
 operando ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | BOOLEANVALUE;
 
 /*--------------------- IF */

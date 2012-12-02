@@ -90,7 +90,5 @@ public class Token {
         this.columna = columna;
     }
 
-    public String toString(){
-        return id + ".-" + identificador;
-    }
+    
 }

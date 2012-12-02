@@ -15,6 +15,7 @@ public class VariableSymbol{
 	public boolean isAlive;
 	//Siguiente uso
 	public int nextUse;
+        public String id;
 
         private void postData(){
 		this.isAlive = false;
@@ -63,5 +64,7 @@ public class VariableSymbol{
 		return String.format("%s%s@%s",
 					 cons, type, address);
 	}
+    
+        
 	
 }

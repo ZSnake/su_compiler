@@ -2,6 +2,7 @@ package Ada95_Semantic;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import su_compiler.*;
 
 public class SymbolTable{
 	//Tabla para el scope actual
@@ -57,7 +58,7 @@ public class SymbolTable{
 
 	public boolean put(Object oid, VariableSymbol type){
 		String soid;
-                soid =(String)oid;
+                soid =oid.toString();
 		soid = soid.toLowerCase();
 		if(!(this.table.containsKey(soid))){
 			type.address = this.relAddress;
@@ -97,14 +98,21 @@ public class SymbolTable{
 	}
         
         public void printTree(SymbolTable actual, int level){
-        for (int i = 0; i <= level; i++) {
-            System.out.print("-");
-        }
-        System.out.println(actual.id);
-        level++;
-        for (int i = 0; i < actual.children.size(); i++) {
-            printTree(actual.children.get(i), level);
-        }
+            for (int i = 0; i <= level; i++) {
+                System.out.print("-");
+            }
+            System.out.print(actual.id);
+            String content = "{";
+            Object keyset[] = actual.getTable().keySet().toArray();
+            for (int i = 0; i < keyset.length; i++) {
+                content += actual.getTable().get(keyset[i]).id + ", ";
+            }
+            content += "}";
+            System.out.println(content);
+            level++;
+            for (int i = 0; i < actual.children.size(); i++) {
+                printTree(actual.children.get(i), level);
+            }
     }
         
 }
