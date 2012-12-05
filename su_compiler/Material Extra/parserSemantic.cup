@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /*init with {: scanner.init();              :};*/
 scan with {: return super.getScanner().next_token(); :};
 
-action code{: 
+action code{: //Ahora si, estas son las variables que se usan en la declaracion
 	/* Declaration variables */
 	public SymbolTable currentScope = null;
 	public ArrayList<VariableSymbol> multipleDeclaration = new ArrayList(); 
@@ -13,7 +13,7 @@ action code{:
 	public Type currentType = null;
 	public boolean isCreating = false;
 	
-	/*Asignation Variables */
+	/*Asignation Variables */ 
 	public Type assigningType = null;
 	public boolean isAssigning = false;
 :};
@@ -64,15 +64,15 @@ programInit ::= procedure programInit| function programInit| error programRecove
 programRecovery ::= declaracion programRecovery | put programRecovery | get programRecovery | ifInit programRecovery | for programRecovery | while programRecovery | 
 					loop programRecovery | programInit | arrayStart programRecovery;
 /* The grammar */
-/*----------------------Declaraciones */
+/*----------------------Declaraciones */ 
 declaracion ::= IDENTIFIER:i {:
 	VariableSymbol temporal = new VariableSymbol(currentType);
 	temporal.id = ((Token)i).getIdentificador();
 	temporal.type = currentType;
 	oids.add(i);
-	multipleDeclaration.add(temporal);
+	multipleDeclaration.add(temporal); 
 :}
-moreDeclaracion declare assign ENDLINE {:
+moreDeclaracion declare assign ENDLINE {: 
 	if(isCreating){
 		for(int j = 0; j < multipleDeclaration.size(); j++){
 			Object temp1 = oids.get(j);
@@ -92,11 +92,11 @@ moreDeclaracion declare assign ENDLINE {:
 		}
 	}else{
 		//No se esta asignando
-	}
+	}  
 	multipleDeclaration = new ArrayList();
 	currentType = null;
 :};
-moreDeclaracion ::= COMATOK IDENTIFIER:i 
+moreDeclaracion ::= COMATOK IDENTIFIER:i //En este lado, cada vez que encuentra una variable la mete en un arrayList y su oid tambien 
 {:
 	VariableSymbol temporal = new VariableSymbol(currentType);
 	temporal.id = ((Token)i).getIdentificador();
@@ -110,7 +110,7 @@ typeDeclaracion ::= INTEGERTOK {:currentType = new IntegerType();:}
 | FLOATTOK{:currentType = new FloatType();:};
 valueDeclaracion ::= BOOLEANVALUE {:assigningType = new BooleanType();:} | arithmetical;
 assign ::= ASIGNATION valueDeclaracion {: isAssigning = true; System.out.println("Va a asignar"); :} | {: isAssigning = false; System.out.println("NO Va a asignar"); :};
-
+//Despues viene a esta produccion
 /*---------------------- Put Get */
 put ::= PUTTOK PARIZQ contentPutGet PARDER ENDLINE
 		| PUTTOK PARIZQ PARDER ENDLINE;
@@ -160,11 +160,31 @@ conditionIf ::= booleanInit;
 /*--------------------- FOR */
 for ::= FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE;
 rangeParams ::= arithmetical;
-contentFor ::= IDENTIFIER asign ENDLINE contentFor | put contentFor | get contentFor| for contentFor | arrayAsign contentFor| if contentFor | while contentFor | loop contentFor | ;
+contentFor ::= IDENTIFIER:i asign ENDLINE{:
+	if(currentScope.get(((Token)i).getIdentificador()) != null){
+		Type variableType = currentScope.get(((Token)i).getIdentificador()).type;
+		if(variableType.equals(assigningType)){
+			System.out.println("Se puede asignar");
+		}else{
+			System.out.println("No se puede asignar");
+		}
+	}else{
+		System.out.println("No existe la variable");
+	} contentFor | put contentFor | get contentFor| for contentFor | arrayAsign contentFor| if contentFor | while contentFor | loop contentFor | ;
 
 /*--------------------- LOOP */
 loop ::= LOOPTOK contentLoop ENDTOK LOOPTOK ENDLINE;
-contentLoop ::= IDENTIFIER asign ENDLINE contentLoop | put contentLoop | get contentLoop | for contentLoop | 
+contentLoop ::= IDENTIFIER:i asign ENDLINE{:
+	if(currentScope.get(((Token)i).getIdentificador()) != null){
+		Type variableType = currentScope.get(((Token)i).getIdentificador()).type;
+		if(variableType.equals(assigningType)){
+			System.out.println("Se puede asignar");
+		}else{
+			System.out.println("No se puede asignar");
+		}
+	}else{
+		System.out.println("No existe la variable");
+	} contentLoop | put contentLoop | get contentLoop | for contentLoop | 
 				arrayAsign contentLoop | if contentLoop | while contentLoop | exit ENDLINE contentLoop | loop contentLoop | ;
 exit ::= EXITTOK WHENTOK booleanInit 
 			|EXITTOK error booleanInit;
@@ -187,7 +207,17 @@ asignacion ::= BOOLEANVALUE {:assigningType = new BooleanType();:}
 /*-------------------- while */
 while ::= WHILETOK conditionWhile LOOPTOK contentWhile ENDTOK LOOPTOK ENDLINE;
 conditionWhile ::= booleanInit;
-contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get contentWhile| for contentWhile |
+contentWhile ::= IDENTIFIER:i asign ENDLINE{:
+	if(currentScope.get(((Token)i).getIdentificador()) != null){
+		Type variableType = currentScope.get(((Token)i).getIdentificador()).type;
+		if(variableType.equals(assigningType)){
+			System.out.println("Se puede asignar");
+		}else{
+			System.out.println("No se puede asignar");
+		}
+	}else{
+		System.out.println("No existe la variable");
+	} contentWhile | put contentWhile| get contentWhile| for contentWhile |
 					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
 
 /*-------------------- function */
@@ -212,7 +242,17 @@ moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
 repeatFunction ::= ENDLINE paramsFunction | ;
 returnExpect ::= RETURNTOK typeFunction;
 returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE | RETURNTOK arithmetical ENDLINE;
-contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFunction | get contentFunction| for contentFunction | loop contentFunction |
+contentFunction ::= IDENTIFIER:i asign ENDLINE{:
+	if(currentScope.get(((Token)i).getIdentificador()) != null){
+		Type variableType = currentScope.get(((Token)i).getIdentificador()).type;
+		if(variableType.equals(assigningType)){
+			System.out.println("Se puede asignar");
+		}else{
+			System.out.println("No se puede asignar");
+		}
+	}else{
+		System.out.println("No existe la variable");
+	} ENDLINE contentFunction | put contentFunction | get contentFunction| for contentFunction | loop contentFunction |
 					arrayAsign contentFunction| if contentFunction | while contentFunction  | returnVal contentFunction | ;
 
 /*---------------------- procedure */
@@ -244,7 +284,17 @@ params ::= IDENTIFIER moreProcedure ANOTATION wichParams typeProcedure | array;
 wichParams ::= INTOK | OUTTOK | INOUTTOK | ;
 moreProcedure ::= COMATOK IDENTIFIER moreProcedure | ;
 innerProcedure ::= procedure innerProcedure | function innerProcedure | ;
-contentProcedure ::= IDENTIFIER asign ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
+contentProcedure ::= IDENTIFIER:i asign ENDLINE{:
+	if(currentScope.get(((Token)i).getIdentificador()) != null){
+		Type variableType = currentScope.get(((Token)i).getIdentificador()).type;
+		if(variableType.equals(assigningType)){
+			System.out.println("Se puede asignar");
+		}else{
+			System.out.println("No se puede asignar");
+		}
+	}else{
+		System.out.println("No existe la variable");
+	} ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
 					| arrayAsign contentProcedure| if contentProcedure | while contentProcedure | loop contentProcedure | ;
 typeProcedure ::= INTEGERTOK | BOOLEANTOK | FLOATTOK;
 
