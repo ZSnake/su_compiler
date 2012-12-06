@@ -113,6 +113,14 @@ public class SymbolTable{
             for (int i = 0; i < actual.children.size(); i++) {
                 printTree(actual.children.get(i), level);
             }
-    }
+        }
+        
+        public SymbolTable findChild(String id){
+            for (SymbolTable child : children) {
+                if(child.id.equals(id))
+                    return child;
+            }
+            return null;
+        }
         
 }

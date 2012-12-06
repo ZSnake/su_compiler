@@ -202,10 +202,10 @@ procedure ::= PROCEDURETOK IDENTIFIER:i {:
 	if(currentScope.parent != null){
 		currentScope = currentScope.parent;
 	}else{
-		System.out.println("Terminado, se imprimira el arbol: ");
+		System.out.println("Terminado, se imprimira el arbol (SymbolTable): ");
 		currentScope.printTree(currentScope, 0);
 	}
-:} paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE;
+:};
 
 declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;
 paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;

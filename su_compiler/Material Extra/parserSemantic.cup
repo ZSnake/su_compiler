@@ -2,7 +2,10 @@ import java_cup.runtime.*;
 import Ada95_Semantic.*;
 import java.util.ArrayList;
 /* Preliminaries to set up and use the scanner.  */
-/*init with {: scanner.init();              :};*/
+init with {:
+	action_obj.currentScope = this.scope;
+	//scanner.init(); 
+:};
 scan with {: return super.getScanner().next_token(); :};
 
 action code{: 
@@ -150,7 +153,7 @@ contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFuncti
 /*---------------------- procedure */
 procedureInit ::= procedure;
 procedure ::= PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE {:
-	System.out.println("Terminado, se imprimira el arbol: ");
+	System.out.println("Terminado, se imprimira el arbol, Semantic: ");
 	currentScope.printTree(currentScope, 0);
 :};
 declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;

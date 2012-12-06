@@ -29,13 +29,7 @@ public class Whole_Main {
             als = new AnalizadorSemantic(ls);
             al.parse();
             alst.parse();
-            try{
-                System.out.println(alst.action_obj.currentScope);
-            }catch(Exception e){
-                System.out.println("null stuff");
-            }
             als.scope = alst.action_obj.currentScope;
-            System.out.println("end parsing symbol table");
             als.parse();
             System.out.println("----------------------------");
             System.out.println(al.imprimirErrores());

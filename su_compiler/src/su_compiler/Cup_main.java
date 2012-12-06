@@ -23,9 +23,9 @@ public class Cup_main {
         //Seleccionamos la opción de nombre de archivo
         opciones[2] = "-parser";
         //Le damos el nombre que queremos que tenga
-        opciones[3] = "AnalizadorSymbolTable";
+        opciones[3] = "AnalizadorSemantic";
         //Le decimos donde se encuentra el archivo .cup
-        opciones[4] = "C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\parserSymbolTable.cup";
+        opciones[4] = "C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\parserSemantic.cup";
         try {
             java_cup.Main.main(opciones);
         } catch (Exception e) {
