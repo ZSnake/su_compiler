@@ -10,6 +10,15 @@ action code{:
 	public ArrayList<VariableSymbol> multipleDeclaration = new ArrayList(); 
 	public ArrayList oids = new ArrayList();
 	public Type currentType = null;
+	
+	public SymbolTable returnWholeTable(){
+		SymbolTable table = currentScope;
+		while(table.parent != null){
+			table = table.parent;
+			
+		}
+		return table;
+	}
 :};
 
 /* Terminals (tokens returned by the scanner). */
@@ -163,7 +172,7 @@ function ::= FUNCIONTOK IDENTIFIER:i
  paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE 
 {: 
 	currentScope = currentScope.parent;
-:} ;
+:}  paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE ;
 declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
 paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
 					
@@ -196,7 +205,7 @@ procedure ::= PROCEDURETOK IDENTIFIER:i {:
 		System.out.println("Terminado, se imprimira el arbol: ");
 		currentScope.printTree(currentScope, 0);
 	}
-:};
+:} paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE;
 
 declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;
 paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;

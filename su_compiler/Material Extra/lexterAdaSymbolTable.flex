@@ -1,7 +1,7 @@
 import java_cup.runtime.*;
 %%
 %unicode
-%class lexerSemantic
+%class lexerSymbolTable
 %int
 %caseless 
 %ignorecase

@@ -96,7 +96,7 @@ declaracion ::= IDENTIFIER:i moreDeclaracion declare:d assign ENDLINE {:
 			type.name = (String)i;
 			if(!currentScope.put(i.getIdentificador(), new VariableSymbol(type, true)))
 			{
-				//Error porque ya estaba declarado
+				
 			}
 		}
 	}
@@ -105,10 +105,10 @@ declaracion ::= IDENTIFIER:i moreDeclaracion declare:d assign ENDLINE {:
 :}; 
 moreDeclaracion ::= COMATOK IDENTIFIER:i 
 {: 
-VariableSymbol temporal = new VariableSymbol(currentType); 
-temporal.id = ((Token)i).getIdentificador(); 
-oids.add(i); 
-multipleDeclaration.add(temporal); 
+	VariableSymbol temporal = new VariableSymbol(currentType); 
+	temporal.id = ((Token)i).getIdentificador(); 
+	oids.add(i); 
+	multipleDeclaration.add(temporal); 
 :} 
 moreDeclaracion | ; 
 declare ::= ANOTATION typeDeclaracion:t {: 

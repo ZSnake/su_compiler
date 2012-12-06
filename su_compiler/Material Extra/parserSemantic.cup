@@ -12,6 +12,10 @@ action code{:
 	public Type currentType = null;
 :};
 
+parser code{:
+	public SymbolTable scope;
+:}
+
 /* Terminals (tokens returned by the scanner). */
 terminal            PUTTOK, PARIZQ, PARDER, ENDLINE, GETTOK, COMATOK, 
 					BOOLEANVALUE, POINTTOK, ASIGNATION, ANOTATION, ARRAYTOK, LETTER, INTOK, OUTTOK, INOUTTOK, FUNCIONTOK, RETURNTOK, OFTOK, 
@@ -57,36 +61,12 @@ programRecovery ::= declaracion programRecovery | put programRecovery | get prog
 					loop programRecovery | programInit | arrayStart programRecovery;
 /* The grammar */
 /*----------------------Declaraciones */
-declaracion ::= IDENTIFIER:i {:
-	 
-	VariableSymbol temporal = new VariableSymbol(currentType);
-	temporal.id = ((Token)i).getIdentificador();
-	temporal.type = currentType;
-	oids.add(i);
-	multipleDeclaration.add(temporal);
-:}
-moreDeclaracion declare assign ENDLINE {:
-	for(int j = 0; j < multipleDeclaration.size(); j++){
-		Object temp1 = oids.get(j);
-		VariableSymbol temp2 = multipleDeclaration.get(j);
-		temp2.type = currentType;
-		currentScope.put(temp1, temp2);
-	}
-	multipleDeclaration = new ArrayList();
-	currentType = null;
-:};
-moreDeclaracion ::= COMATOK IDENTIFIER:i 
-{:
-	VariableSymbol temporal = new VariableSymbol(currentType);
-	temporal.id = ((Token)i).getIdentificador();
-	oids.add(i);
-	multipleDeclaration.add(temporal);
-:}	
-moreDeclaracion | ;
+declaracion ::= IDENTIFIER moreDeclaracion declare assign ENDLINE;
+moreDeclaracion ::= COMATOK IDENTIFIER moreDeclaracion | ;
 declare ::= ANOTATION typeDeclaracion | ;
-typeDeclaracion ::= INTEGERTOK {:currentType = new IntegerType();:}
-| BOOLEANTOK {:currentType = new BooleanType();:}
-| FLOATTOK{:currentType = new FloatType();:};
+typeDeclaracion ::= INTEGERTOK 
+| BOOLEANTOK 
+| FLOATTOK ;
 valueDeclaracion ::= BOOLEANVALUE | arithmetical;
 assign ::= ASIGNATION valueDeclaracion | ;
 
@@ -153,17 +133,7 @@ contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get c
 					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
 
 /*-------------------- function */
-function ::= FUNCIONTOK IDENTIFIER:i
-{:
-	String id = i.toString();
-	SymbolTable temp = new SymbolTable(currentScope, id);
-	currentScope.addChild(temp);
-	currentScope = temp;
-:}
- paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE 
-{: 
-	currentScope = currentScope.parent;
-:} ;
+function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE ;
 declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
 paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
 					
@@ -179,25 +149,10 @@ contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFuncti
 
 /*---------------------- procedure */
 procedureInit ::= procedure;
-procedure ::= PROCEDURETOK IDENTIFIER:i {:
-	String id = i.toString();
-	if(currentScope != null){
-		SymbolTable newScope = new SymbolTable(currentScope, id);
-		currentScope.addChild(newScope);
-		currentScope = newScope;
-	}else{
-		currentScope = new SymbolTable(currentScope, id);
-	}
-:} paramsProcedure ISTOK  declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE 
-{:
-	if(currentScope.parent != null){
-		currentScope = currentScope.parent;
-	}else{
-		System.out.println("Terminado, se imprimira el arbol: ");
-		currentScope.printTree(currentScope, 0);
-	}
+procedure ::= PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE {:
+	System.out.println("Terminado, se imprimira el arbol: ");
+	currentScope.printTree(currentScope, 0);
 :};
-
 declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;
 paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;
 innerParams ::= params moreParamsProcedure ;
