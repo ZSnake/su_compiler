@@ -90,7 +90,8 @@ declaracion ::= IDENTIFIER:i moreDeclaracion declare:d assign ENDLINE {:
 	// todavia no se revisan las moreDeclaracion
 	ParserResult prd = (ParserResult)d;
 	if(prd.type!= null){
-		if(((String)prd.value).equalsIgnoreCase(prd.type.name))
+		if(((String)prd.value).equal
+		sIgnoreCase(prd.type.name))
 		{
 			Type type = prd.type;
 			type.name = (String)i;
@@ -141,15 +142,16 @@ b ::= OPSUMA a b | ;
 d ::= OPMULT f d | ; 
 f ::= IDENTIFIER:id {: assigningType = currentScope.get(((Token)id).getIdentificador()).type; System.out.println("En aritmeticas, id");:} 
 | IDENTIFIER llamadoMetodo 
-| NUMBER {: assigningType = new IntegerType(); System.out.println("Aritmetica, int");:} 
-| NUMBER POINTTOK NUMBER {: assigningType = new FloatType(); System.out.println("Aritmetica, float");:} 
+| NUMBER {: assigningType = new I  
 | PARIZQ arithmetical PARDER; 
+
 /*---------------------- Expresiones Booleanas */ 
 booleanInit ::= expresion; 
 expresion ::= PARIZQ expresion PARDER moreBoolean | operando moreBoolean | moreBoolean; 
 moreBoolean ::= operacion expresion | ; 
 operacion ::= OPBOOL | OPRELACIONAL; 
-operando ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | BOOLEANVALUE; 
+operando ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | BOOLEANVALUE;
+ 
 /*--------------------- IF */ 
 ifInit ::= if; 
 if ::= IFTOK conditionIf THENTOK contentIf elsif else ENDTOK IFTOK ENDLINE; 

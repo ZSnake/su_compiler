@@ -88,7 +88,7 @@ typeDeclaracion ::= INTEGERTOK
 | BOOLEANTOK 
 | FLOATTOK ;
 valueDeclaracion ::= BOOLEANVALUE {:RESULT = new ParserResult(new BooleanType());:} | arithmetical:ar {:RESULT = ar;:};
-assign ::= ASIGNATION valueDeclaracion:vd {:RESULT = vd;:} | ;
+assign ::= ASIGNATION valueDeclaracion:vd {:RESULT = (ParserResult)vd;:} | ;
 
 /*---------------------- Put Get */
 put ::= PUTTOK PARIZQ contentPutGet PARDER ENDLINE
@@ -99,10 +99,78 @@ valuePutGet ::=  LETTER | BOOLEANVALUE | arithmetical ;
 morePutGet ::= COMATOK valuePutGet morePutGet | ;
 
 /*---------------------- Expresiones Aritmeticas */
-arithmetical ::= a b;
-a ::= f d;
-b ::= OPSUMA a b | ;
-d ::= OPMULT f d | ;
+arithmetical ::= a:var1 b:var2{:
+	ParserResult p1 = (ParserResult)var1;
+	ParserResult p2 = (ParserResult)var2;
+	if(p1 != null && p2 != null)){
+		if(p1.type.equals(p2.type){
+			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
+			RESULT = p1;
+		}else{
+			System.out.println("Error, dos tipos diferentes, no se puede operar");
+			RESULT = null;
+		}
+	}else{
+		if(p1 != null)
+			RESULT = p1;
+		else
+			RESULT = p2;
+	}
+:};
+a ::= f:var1 d:var2 {:
+	ParserResult p1 = (ParserResult)var1;
+	ParserResult p2 = (ParserResult)var2;
+	if(p1 != null && p2 != null){
+		if(p1.type.equals(p2.type)){
+			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
+			RESULT = p1;
+		}else{
+			System.out.println("Error, dos tipos diferentes, no se puede operar");
+			RESULT = null;
+		}
+	}else{
+		if(p1 != null)
+			RESULT = p1;
+		else
+			RESULT = p2;
+	}
+:};
+b ::= OPSUMA a:var1 b:var2{:
+	ParserResult p1 = (ParserResult)var1;
+	ParserResult p2 = (ParserResult)var2;
+	if(p1 != null && p2 != null){
+		if(p1.type.equals(p2.type)){
+			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
+			RESULT = p1;
+		}else{
+			System.out.println("Error, dos tipos diferentes, no se puede operar");
+			RESULT = null;
+		}
+	}else{
+		if(p1 != null)
+			RESULT = p1;
+		else
+			RESULT = p2;
+	}
+:} | ;
+d ::= OPMULT f:var1 d:var2 {:
+	ParserResult p1 = (ParserResult)var1;
+	ParserResult p2 = (ParserResult)var2;
+	if(p1 != null && p2 != null){
+		if(p1.type.equals(p2.type)){
+			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
+			RESULT = p1;
+		}else{
+			System.out.println("Error, dos tipos diferentes, no se puede operar");
+			RESULT = null;
+		}
+	}else{
+		if(p1 != null)
+			RESULT = p1;
+		else
+			RESULT = p2;
+	}
+:} | ;
 f ::= IDENTIFIER 
 | IDENTIFIER llamadoMetodo 
 | NUMBER {:RESULT = new ParserResult(new IntegerType());:}
