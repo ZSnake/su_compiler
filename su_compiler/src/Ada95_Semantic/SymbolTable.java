@@ -101,11 +101,12 @@ public class SymbolTable{
             for (int i = 0; i <= level; i++) {
                 System.out.print("-");
             }
+            
             System.out.print(actual.id);
             String content = "{";
             Object keyset[] = actual.getTable().keySet().toArray();
             for (int i = 0; i < keyset.length; i++) {
-                content += actual.getTable().get(keyset[i]).id + ", ";
+                content += keyset[i] + ", ";
             }
             content += "}";
             System.out.println(content);

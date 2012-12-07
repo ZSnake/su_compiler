@@ -1,5 +1,6 @@
 import java_cup.runtime.*;
 import Ada95_Semantic.*;
+import Ada95_Intermediate.*;
 /* Preliminaries to set up and use the scanner.  */
 /*init with {: scanner.init();              :};*/
 scan with {: return super.getScanner().next_token(); :};

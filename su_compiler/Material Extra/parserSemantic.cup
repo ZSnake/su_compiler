@@ -1,5 +1,6 @@
 import java_cup.runtime.*;
 import Ada95_Semantic.*;
+import Ada95_Intermediate.*;
 import java.util.ArrayList;
 /* Preliminaries to set up and use the scanner.  */
 init with {:
@@ -9,10 +10,9 @@ init with {:
 scan with {: return super.getScanner().next_token(); :};
 
 action code{: 
-	public SymbolTable currentScope = null;
-	public ArrayList<VariableSymbol> multipleDeclaration = new ArrayList(); 
-	public ArrayList oids = new ArrayList();
-	public Type currentType = null;
+	public SymbolTable currentScope;
+	ArrayList<VariableSymbol> multipleDeclaration = new ArrayList();
+	
 :};
 
 parser code{:
@@ -64,14 +64,31 @@ programRecovery ::= declaracion programRecovery | put programRecovery | get prog
 					loop programRecovery | programInit | arrayStart programRecovery;
 /* The grammar */
 /*----------------------Declaraciones */
-declaracion ::= IDENTIFIER moreDeclaracion declare assign ENDLINE;
-moreDeclaracion ::= COMATOK IDENTIFIER moreDeclaracion | ;
+declaracion ::= IDENTIFIER:i{:
+	System.out.println("Current Scope: " + currentScope.id );
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	multipleDeclaration.add(var);
+:} moreDeclaracion declare assign:a ENDLINE {:
+	ParserResult resultado = (ParserResult)a;
+	for(VariableSymbol var : multipleDeclaration){
+		if(var.type.equals(resultado.type)){
+			System.out.println("Se puede agregar, los tipos concuerdan");
+		}else{
+			System.out.println("no Se puede agregar, los tipos NO concuerdan");
+		}
+	}
+	multipleDeclaration = new ArrayList();
+:};
+moreDeclaracion ::= COMATOK IDENTIFIER:i {:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	multipleDeclaration.add(var);
+:} moreDeclaracion | ;
 declare ::= ANOTATION typeDeclaracion | ;
 typeDeclaracion ::= INTEGERTOK 
 | BOOLEANTOK 
 | FLOATTOK ;
-valueDeclaracion ::= BOOLEANVALUE | arithmetical;
-assign ::= ASIGNATION valueDeclaracion | ;
+valueDeclaracion ::= BOOLEANVALUE {:RESULT = new ParserResult(new BooleanType());:} | arithmetical:ar {:RESULT = ar;:};
+assign ::= ASIGNATION valueDeclaracion:vd {:RESULT = vd;:} | ;
 
 /*---------------------- Put Get */
 put ::= PUTTOK PARIZQ contentPutGet PARDER ENDLINE
@@ -86,7 +103,13 @@ arithmetical ::= a b;
 a ::= f d;
 b ::= OPSUMA a b | ;
 d ::= OPMULT f d | ;
-f ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NUMBER | PARIZQ arithmetical PARDER;
+f ::= IDENTIFIER 
+| IDENTIFIER llamadoMetodo 
+| NUMBER {:RESULT = new ParserResult(new IntegerType());:}
+| NUMBER POINTTOK NUMBER {: RESULT = new ParserResult(new FloatType()); :}
+| PARIZQ arithmetical:ar {:
+	RESULT = (ParserResult)ar;
+:} PARDER;
 
 /*---------------------- Expresiones Booleanas */
 booleanInit ::= expresion;
@@ -136,7 +159,11 @@ contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get c
 					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
 
 /*-------------------- function */
-function ::= FUNCIONTOK IDENTIFIER paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE ;
+function ::= FUNCIONTOK IDENTIFIER:i {:
+	currentScope = currentScope.findChild(((Token)i).getIdentificador());
+:} paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE {:
+	currentScope = currentScope.parent;
+:};
 declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
 paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
 					
@@ -152,9 +179,22 @@ contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFuncti
 
 /*---------------------- procedure */
 procedureInit ::= procedure;
-procedure ::= PROCEDURETOK IDENTIFIER paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE {:
-	System.out.println("Terminado, se imprimira el arbol, Semantic: ");
-	currentScope.printTree(currentScope, 0);
+procedure ::= PROCEDURETOK IDENTIFIER:i {:
+	if(!currentScope.id.equals(((Token)i).getIdentificador())){
+		currentScope = currentScope.findChild(((Token)i).getIdentificador());
+		if(currentScope != null){
+			System.out.println("Cambio exitoso: " + currentScope.id);
+		}else{
+			System.out.println("Retorna null");
+		}
+	}else{
+		System.out.println("Iniciando, se imprimira arbol: ");
+		currentScope.printTree(currentScope, 0);
+	}	
+:} paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE {:
+	if(currentScope.parent != null){
+		currentScope = currentScope.parent;
+	}
 :};
 declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declaracionesProcedure | procedure declaracionesProcedure| function declaracionesProcedure | ;
 paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;

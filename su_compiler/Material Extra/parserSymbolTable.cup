@@ -1,6 +1,7 @@
 import java_cup.runtime.*;
 import Ada95_Semantic.*;
 import java.util.ArrayList;
+import Ada95_Intermediate.*;
 /* Preliminaries to set up and use the scanner.  */
 /*init with {: scanner.init();              :};*/
 scan with {: return super.getScanner().next_token(); :};
@@ -71,7 +72,7 @@ declaracion ::= IDENTIFIER:i {:
 	VariableSymbol temporal = new VariableSymbol(currentType);
 	temporal.id = ((Token)i).getIdentificador();
 	temporal.type = currentType;
-	oids.add(i);
+	oids.add(temporal.id);
 	multipleDeclaration.add(temporal);
 :}
 moreDeclaracion declare assign ENDLINE {:
@@ -82,13 +83,14 @@ moreDeclaracion declare assign ENDLINE {:
 		currentScope.put(temp1, temp2);
 	}
 	multipleDeclaration = new ArrayList();
+	oids = new ArrayList();
 	currentType = null;
 :};
 moreDeclaracion ::= COMATOK IDENTIFIER:i 
 {:
 	VariableSymbol temporal = new VariableSymbol(currentType);
 	temporal.id = ((Token)i).getIdentificador();
-	oids.add(i);
+	oids.add(temporal.id);
 	multipleDeclaration.add(temporal);
 :}	
 moreDeclaracion | ;
@@ -164,7 +166,7 @@ contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get c
 /*-------------------- function */
 function ::= FUNCIONTOK IDENTIFIER:i
 {:
-	String id = i.toString();
+	String id = ((Token)i).getIdentificador();
 	SymbolTable temp = new SymbolTable(currentScope, id);
 	currentScope.addChild(temp);
 	currentScope = temp;
@@ -189,7 +191,7 @@ contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFuncti
 /*---------------------- procedure */
 procedureInit ::= procedure;
 procedure ::= PROCEDURETOK IDENTIFIER:i {:
-	String id = i.toString();
+	String id = ((Token)i).getIdentificador();
 	if(currentScope != null){
 		SymbolTable newScope = new SymbolTable(currentScope, id);
 		currentScope.addChild(newScope);
