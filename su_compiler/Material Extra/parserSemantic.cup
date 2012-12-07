@@ -102,7 +102,7 @@ morePutGet ::= COMATOK valuePutGet morePutGet | ;
 arithmetical ::= a:var1 b:var2{:
 	ParserResult p1 = (ParserResult)var1;
 	ParserResult p2 = (ParserResult)var2;
-	if(p1 != null && p2 != null){
+	if(p2 != null){
 		if(p1.type.equals(p2.type)){
 			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
 			RESULT = p1;
@@ -111,18 +111,13 @@ arithmetical ::= a:var1 b:var2{:
 			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
-			if(p2 != null){
-				RESULT = p2;			
-			}else{
-				RESULT = new ParserResult(new ErrorType());
-				System.out.println("Aritmetica, no se puede operar");
-			}
-		}
+		RESULT = p1;
+	}
 :};
 a ::= f:var1 d:var2 {:
 	ParserResult p1 = (ParserResult)var1;
 	ParserResult p2 = (ParserResult)var2;
-	if(p1 != null && p2 != null){
+	if(p2 != null){
 		if(p1.type.equals(p2.type)){
 			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
 			RESULT = p1;
@@ -131,18 +126,13 @@ a ::= f:var1 d:var2 {:
 			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
-			if(p2 != null){
-				RESULT = p2;			
-			}else{
-				RESULT = new ParserResult(new ErrorType());
-				System.out.println("Aritmetica, no se puede operar");
-			}
-		}
+		RESULT = p1;
+	}
 :};
 b ::= OPSUMA a:var1 b:var2{:
 	ParserResult p1 = (ParserResult)var1;
 	ParserResult p2 = (ParserResult)var2;
-	if(p1 != null && p2 != null){
+	if(p2 != null){
 		if(p1.type.equals(p2.type)){
 			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
 			RESULT = p1;
@@ -151,18 +141,13 @@ b ::= OPSUMA a:var1 b:var2{:
 			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
-		if(p2 != null){
-			RESULT = p2;			
-		}else{
-			RESULT = new ParserResult(new ErrorType());
-			System.out.println("Aritmetica, no se puede operar");
-		}
+		RESULT = p1;
 	}
-:} | ;
+:} | {:RESULT = null;:};
 d ::= OPMULT f:var1 d:var2 {:
 	ParserResult p1 = (ParserResult)var1;
 	ParserResult p2 = (ParserResult)var2;
-	if(p1 != null && p2 != null){
+	if(p2 != null){
 		if(p1.type.equals(p2.type)){
 			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
 			RESULT = p1;
@@ -171,19 +156,9 @@ d ::= OPMULT f:var1 d:var2 {:
 			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
-		if(p1 != null)
-			RESULT = p1;
-		else{
-			if(p2 != null){
-				RESULT = p2;			
-			}else{
-				RESULT = new ParserResult(new ErrorType());
-				System.out.println("Aritmetica, no se puede operar");
-			}
-		}
-
+		RESULT = p1;
 	}
-:} | ;
+:} | {:RESULT = null;:};
 f ::= IDENTIFIER 
 | IDENTIFIER llamadoMetodo 
 | NUMBER {:RESULT = new ParserResult(new IntegerType());:}

@@ -101,7 +101,7 @@ declaracion ::= IDENTIFIER:i moreDeclaracion declare:d assign ENDLINE {:
 			}
 		}
 	}
-	else {
+	else 
 		// Error no se ha declarado como tipo primitivo
 :}; 
 moreDeclaracion ::= COMATOK IDENTIFIER:i 
