@@ -28,9 +28,11 @@ public class Whole_Main {
             alst = new AnalizadorSymbolTable(lst);
             als = new AnalizadorSemantic(ls);
             al.parse();
-            alst.parse();
-            als.scope = alst.action_obj.currentScope;
-            als.parse();
+            if(al.errores == 0){
+                alst.parse();
+                als.scope = alst.action_obj.currentScope;
+                als.parse();
+            }
             System.out.println("----------------------------");
             System.out.println(al.imprimirErrores());
             

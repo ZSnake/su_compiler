@@ -102,20 +102,22 @@ morePutGet ::= COMATOK valuePutGet morePutGet | ;
 arithmetical ::= a:var1 b:var2{:
 	ParserResult p1 = (ParserResult)var1;
 	ParserResult p2 = (ParserResult)var2;
-	if(p1 != null && p2 != null)){
-		if(p1.type.equals(p2.type){
+	if(p1 != null && p2 != null){
+		if(p1.type.equals(p2.type)){
 			System.out.println("Aritmetica, mismo tipo.. Se puede operar");
 			RESULT = p1;
 		}else{
 			System.out.println("Error, dos tipos diferentes, no se puede operar");
-			RESULT = null;
+			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
-		if(p1 != null)
-			RESULT = p1;
-		else
-			RESULT = p2;
-	}
+			if(p2 != null){
+				RESULT = p2;			
+			}else{
+				RESULT = new ParserResult(new ErrorType());
+				System.out.println("Aritmetica, no se puede operar");
+			}
+		}
 :};
 a ::= f:var1 d:var2 {:
 	ParserResult p1 = (ParserResult)var1;
@@ -126,14 +128,16 @@ a ::= f:var1 d:var2 {:
 			RESULT = p1;
 		}else{
 			System.out.println("Error, dos tipos diferentes, no se puede operar");
-			RESULT = null;
+			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
-		if(p1 != null)
-			RESULT = p1;
-		else
-			RESULT = p2;
-	}
+			if(p2 != null){
+				RESULT = p2;			
+			}else{
+				RESULT = new ParserResult(new ErrorType());
+				System.out.println("Aritmetica, no se puede operar");
+			}
+		}
 :};
 b ::= OPSUMA a:var1 b:var2{:
 	ParserResult p1 = (ParserResult)var1;
@@ -144,13 +148,15 @@ b ::= OPSUMA a:var1 b:var2{:
 			RESULT = p1;
 		}else{
 			System.out.println("Error, dos tipos diferentes, no se puede operar");
-			RESULT = null;
+			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
-		if(p1 != null)
-			RESULT = p1;
-		else
-			RESULT = p2;
+		if(p2 != null){
+			RESULT = p2;			
+		}else{
+			RESULT = new ParserResult(new ErrorType());
+			System.out.println("Aritmetica, no se puede operar");
+		}
 	}
 :} | ;
 d ::= OPMULT f:var1 d:var2 {:
@@ -162,13 +168,20 @@ d ::= OPMULT f:var1 d:var2 {:
 			RESULT = p1;
 		}else{
 			System.out.println("Error, dos tipos diferentes, no se puede operar");
-			RESULT = null;
+			RESULT = new ParserResult(new ErrorType());
 		}
 	}else{
 		if(p1 != null)
 			RESULT = p1;
-		else
-			RESULT = p2;
+		else{
+			if(p2 != null){
+				RESULT = p2;			
+			}else{
+				RESULT = new ParserResult(new ErrorType());
+				System.out.println("Aritmetica, no se puede operar");
+			}
+		}
+
 	}
 :} | ;
 f ::= IDENTIFIER 

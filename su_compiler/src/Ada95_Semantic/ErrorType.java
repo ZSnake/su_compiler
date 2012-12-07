@@ -26,7 +26,7 @@ public class ErrorType extends Type{
 		if(!(o instanceof Type)) {
                     return false;
                 }
-		if(this.product.isEmpty()) {
+		if(this.product == null || this.product.isEmpty()) {
                     return false;
                 }
 		if(!(this.product.get(0).toString().equals(o.toString()))) {
