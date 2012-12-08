@@ -1,9 +1,9 @@
 procedure f1 is      
 	a,b,c : integer := 14;
 	procedure f2 is
-		d,e,f : integer := 12 + 13 + 15 * 12 + 13*((12*3+12*(3.5+5))+2);
+		d,e,f : integer := 12;
 		begin
-			thing := 2;
+			f := 2;
 		end f2;
 begin
 	thing := 2;

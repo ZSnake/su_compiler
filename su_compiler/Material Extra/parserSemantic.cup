@@ -160,7 +160,10 @@ d ::= OPMULT f:var1 d:var2 {:
 	}
 :} | {:RESULT = null;:};
 f ::= IDENTIFIER 
-| IDENTIFIER llamadoMetodo 
+| IDENTIFIER:i{:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	RESULT = var.type;
+:} llamadoMetodo 
 | NUMBER {:RESULT = new ParserResult(new IntegerType());:}
 | NUMBER POINTTOK NUMBER {: RESULT = new ParserResult(new FloatType()); :}
 | PARIZQ arithmetical:ar {:
@@ -168,7 +171,7 @@ f ::= IDENTIFIER
 :} PARDER;
 
 /*---------------------- Expresiones Booleanas */
-booleanInit ::= expresion;
+booleanInit ::= expresion ;
 expresion ::= PARIZQ expresion PARDER moreBoolean | operando moreBoolean | moreBoolean;
 moreBoolean ::= operacion expresion | ;
 operacion ::= OPBOOL | OPRELACIONAL;
@@ -203,10 +206,11 @@ range ::= PARIZQ arithmetical RANGETOK arithmetical twoD PARDER;
 twoD ::= COMATOK arithmetical RANGETOK arithmetical | ;
 typeArray ::= BOOLEANTOK | INTEGERTOK | FLOATTOK;
 
+/*------------------------Asignaciones */
 arrayAsign ::= IDENTIFIER PARIZQ arithmetical moreArrayAsign PARDER asign ENDLINE;
-asign ::= ASIGNATION asignacion| ;
+asign ::= ASIGNATION asignacion:a {:RESULT = (ParserResult)a;:}| ;
 moreArrayAsign ::= COMATOK arithmetical | ;
-asignacion ::= BOOLEANVALUE | arithmetical ;
+asignacion ::= BOOLEANVALUE {:RESULT = new ParserResult(new BooleanType());:}| arithmetical:ar {:RESULT = (ParserResult)ar;:};
 
 /*-------------------- while */
 while ::= WHILETOK conditionWhile LOOPTOK contentWhile ENDTOK LOOPTOK ENDLINE;
@@ -260,7 +264,20 @@ params ::= IDENTIFIER moreProcedure ANOTATION wichParams typeProcedure | array;
 wichParams ::= INTOK | OUTTOK | INOUTTOK | ;
 moreProcedure ::= COMATOK IDENTIFIER moreProcedure | ;
 innerProcedure ::= procedure innerProcedure | function innerProcedure | ;
-contentProcedure ::= IDENTIFIER asign ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
+contentProcedure ::= IDENTIFIER:i asign:as{:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	System.out.println(as);
+	ParserResult assignment = (ParserResult)as;
+	if(var != null){
+		if(var.type.equals(assignment.type)){
+			System.out.println("Se puede asignar");
+		}else{
+			System.out.println("No se puede asignar, tipos no concuerdan");
+		}
+	}else{
+		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
+	}
+:} ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
 					| arrayAsign contentProcedure| if contentProcedure | while contentProcedure | loop contentProcedure | ;
 typeProcedure ::= INTEGERTOK | BOOLEANTOK | FLOATTOK;
 
