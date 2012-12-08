@@ -72,9 +72,9 @@ declaracion ::= IDENTIFIER:i{:
 	ParserResult resultado = (ParserResult)a;
 	for(VariableSymbol var : multipleDeclaration){
 		if(var.type.equals(resultado.type)){
-			System.out.println("Se puede agregar, los tipos concuerdan");
+			System.out.println("La variable " + var.id + " se puede asignar, los tipos concuerdan");
 		}else{
-			System.out.println("no Se puede agregar, los tipos NO concuerdan");
+			System.out.println("La variable " + var.id + "no se puede asignar, los tipos NO concuerdan");
 		}
 	}
 	multipleDeclaration = new ArrayList();
@@ -242,13 +242,8 @@ procedureInit ::= procedure;
 procedure ::= PROCEDURETOK IDENTIFIER:i {:
 	if(!currentScope.id.equals(((Token)i).getIdentificador())){
 		currentScope = currentScope.findChild(((Token)i).getIdentificador());
-		if(currentScope != null){
-			System.out.println("Cambio exitoso: " + currentScope.id);
-		}else{
-			System.out.println("Retorna null");
-		}
 	}else{
-		System.out.println("Iniciando, se imprimira arbol: ");
+		System.out.println("Iniciando, se imprimira arbol (Semantic): ");
 		currentScope.printTree(currentScope, 0);
 	}	
 :} paramsProcedure ISTOK declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE {:
@@ -266,13 +261,12 @@ moreProcedure ::= COMATOK IDENTIFIER moreProcedure | ;
 innerProcedure ::= procedure innerProcedure | function innerProcedure | ;
 contentProcedure ::= IDENTIFIER:i asign:as{:
 	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
-	System.out.println(as);
 	ParserResult assignment = (ParserResult)as;
 	if(var != null){
 		if(var.type.equals(assignment.type)){
-			System.out.println("Se puede asignar");
+			System.out.println("La variable "+ var.id + " se puede asignar");
 		}else{
-			System.out.println("No se puede asignar, tipos no concuerdan");
+			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
 		}
 	}else{
 		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
