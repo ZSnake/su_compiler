@@ -12,7 +12,30 @@ scan with {: return super.getScanner().next_token(); :};
 action code{: 
 	public SymbolTable currentScope;
 	ArrayList<VariableSymbol> multipleDeclaration = new ArrayList();
+	public ArrayList<Quadruple> cuadruplos = new ArrayList(); //Cuadruplos de codigo intermedio
+	int numeroTemporal;
+	/*Metodos de generacion de cuadruplos con sus diferentes variantes*/
+	public void gen(String action, String arg1, String arg2, String res){
+		cuadruplos.add(new Quadruple(action, arg1, arg2, res));
+	}
 	
+	public void gen(String action, String arg1, String res){
+		cuadruplos.add(new Quadruple(action, arg1, res));
+	}
+	
+	public void gen(String action, String arg1){
+		cuadruplos.add(new Quadruple(action, arg1));
+	}
+	
+	public void gen(String action){
+		cuadruplos.add(new Quadruple(action));
+	}
+	
+	public String obtenerTemporal(){
+		int temp = numeroTemporal;
+		numeroTemporal++;
+		return "t" + temp;	
+	}
 :};
 
 parser code{:
@@ -180,7 +203,19 @@ operando ::= IDENTIFIER | IDENTIFIER llamadoMetodo | NUMBER | NUMBER POINTTOK NU
 /*--------------------- IF */
 ifInit ::= if;
 if ::= IFTOK conditionIf THENTOK contentIf elsif else ENDTOK IFTOK ENDLINE;
-contentIf ::= IDENTIFIER asign ENDLINE contentIf| put contentIf| get contentIf| for contentIf| arrayAsign contentIf| if contentIf | while contentIf | loop contentIf | ;
+contentIf ::= IDENTIFIER:i asign:as{:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	ParserResult assignment = (ParserResult)as;
+	if(var != null){
+		if(var.type.equals(assignment.type)){
+			System.out.println("La variable "+ var.id + " se puede asignar");
+		}else{
+			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+		}
+	}else{
+		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
+	}
+:} ENDLINE contentIf| put contentIf| get contentIf| for contentIf| arrayAsign contentIf| if contentIf | while contentIf | loop contentIf | ;
 elsif ::= ELSIFTOK conditionIf THENTOK contentIf elsif| ;
 else ::= ELSETOK contentIf | ;
 conditionIf ::= booleanInit;
@@ -188,14 +223,37 @@ conditionIf ::= booleanInit;
 /*--------------------- FOR */
 for ::= FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE;
 rangeParams ::= arithmetical;
-contentFor ::= IDENTIFIER asign ENDLINE contentFor | put contentFor | get contentFor| for contentFor | arrayAsign contentFor| if contentFor | while contentFor | loop contentFor | ;
+contentFor ::= IDENTIFIER:i asign:as{:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	ParserResult assignment = (ParserResult)as;
+	if(var != null){
+		if(var.type.equals(assignment.type)){
+			System.out.println("La variable "+ var.id + " se puede asignar");
+		}else{
+			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+		}
+	}else{
+		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
+	}
+:} ENDLINE contentFor | put contentFor | get contentFor| for contentFor | arrayAsign contentFor| if contentFor | while contentFor | loop contentFor | ;
 
 /*--------------------- LOOP */
 loop ::= LOOPTOK contentLoop ENDTOK LOOPTOK ENDLINE;
-contentLoop ::= IDENTIFIER asign ENDLINE contentLoop | put contentLoop | get contentLoop | for contentLoop | 
+contentLoop ::= IDENTIFIER:i asign:as{:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	ParserResult assignment = (ParserResult)as;
+	if(var != null){
+		if(var.type.equals(assignment.type)){
+			System.out.println("La variable "+ var.id + " se puede asignar");
+		}else{
+			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+		}
+	}else{
+		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
+	}
+:} ENDLINE contentLoop | put contentLoop | get contentLoop | for contentLoop | 
 				arrayAsign contentLoop | if contentLoop | while contentLoop | exit ENDLINE contentLoop | loop contentLoop | ;
-exit ::= EXITTOK WHENTOK booleanInit 
-			|EXITTOK error booleanInit;
+exit ::= EXITTOK WHENTOK booleanInit ;
 
 /*--------------------- Arrays */
 arrayStart ::= array | arrayAsign ;
@@ -215,7 +273,19 @@ asignacion ::= BOOLEANVALUE {:RESULT = new ParserResult(new BooleanType());:}| a
 /*-------------------- while */
 while ::= WHILETOK conditionWhile LOOPTOK contentWhile ENDTOK LOOPTOK ENDLINE;
 conditionWhile ::= booleanInit;
-contentWhile ::= IDENTIFIER asign ENDLINE contentWhile | put contentWhile| get contentWhile| for contentWhile |
+contentWhile ::= IDENTIFIER:i asign:as{:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	ParserResult assignment = (ParserResult)as;
+	if(var != null){
+		if(var.type.equals(assignment.type)){
+			System.out.println("La variable "+ var.id + " se puede asignar");
+		}else{
+			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+		}
+	}else{
+		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
+	}
+:} ENDLINE contentWhile | put contentWhile| get contentWhile| for contentWhile |
 					arrayAsign contentWhile| if contentWhile | while contentWhile | loop contentWhile | ;
 
 /*-------------------- function */
@@ -228,13 +298,28 @@ declaracionesFunction ::= declaracion declaracionesFunction| array declaraciones
 paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
 					
 moreParamsFunction ::= ENDLINE IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction | ;
-typeFunction ::= INTEGERTOK | BOOLEANTOK | FLOATTOK | error;
+typeFunction ::= INTEGERTOK {:RESULT = new ParserResult(new IntegerType());:} 
+| BOOLEANTOK {:RESULT = new ParserResult(new BooleanType());:}
+| FLOATTOK {:RESULT = new ParserResult(new FloatType());:};
 typeParamFunction ::= INTOK | ;
 moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
 repeatFunction ::= ENDLINE paramsFunction | ;
 returnExpect ::= RETURNTOK typeFunction;
-returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE | RETURNTOK arithmetical ENDLINE;
-contentFunction ::= IDENTIFIER asign ENDLINE contentFunction | put contentFunction | get contentFunction| for contentFunction | loop contentFunction |
+returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE {:RESULT = new ParserResult(new BooleanType());:}
+| RETURNTOK arithmetical:a ENDLINE{:RESULT = a;:};
+contentFunction ::= IDENTIFIER:i asign:as{:
+	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
+	ParserResult assignment = (ParserResult)as;
+	if(var != null){
+		if(var.type.equals(assignment.type)){
+			System.out.println("La variable "+ var.id + " se puede asignar");
+		}else{
+			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+		}
+	}else{
+		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
+	}
+:} ENDLINE contentFunction | put contentFunction | get contentFunction| for contentFunction | loop contentFunction |
 					arrayAsign contentFunction| if contentFunction | while contentFunction  | returnVal contentFunction | ;
 
 /*---------------------- procedure */

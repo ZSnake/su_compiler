@@ -18,13 +18,22 @@ public class Quadruple {
         this.operator = operator;
         this.argument1 = argument1;
         this.result = result;
+        this.argument2 = "";
     }
 
     public Quadruple(String operator, String result) {
         this.operator = operator;
         this.result = result;
+        this.argument1 = "";
+        this.argument2 = "";
     }
 
+    public Quadruple(String operator){
+        this.operator = operator;
+        this.argument1 = "";
+        this.argument2 = "";
+        this.result = "";
+    }
     public Quadruple() {
     }
 
@@ -61,4 +70,5 @@ public class Quadruple {
     }
     
     
+    //"asig" es una asignacion
 }
