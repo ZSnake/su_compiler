@@ -12,6 +12,7 @@ scan with {: return super.getScanner().next_token(); :};
 action code{: 
 	public SymbolTable currentScope;
 	ArrayList<VariableSymbol> multipleDeclaration = new ArrayList();
+	ArrayList<Type> retornosFunction = new ArrayList();
 	public ArrayList<Quadruple> cuadruplos = new ArrayList(); //Cuadruplos de codigo intermedio
 	int numeroTemporal;
 	/*Metodos de generacion de cuadruplos con sus diferentes variantes*/
@@ -302,7 +303,15 @@ contentWhile ::= IDENTIFIER:i asign:as{:
 /*-------------------- function */
 function ::= FUNCIONTOK IDENTIFIER:i {:
 	currentScope = currentScope.findChild(((Token)i).getIdentificador());
-:} paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE {:
+:} paramsFunction returnExpect:re ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE {:
+	for(int k = 0; k < retornosFunction.size(); k++){
+		
+		if(!(retornosFunction.get(k).equals(((ParserResult)re).type))){
+			System.out.println("Retorno con tipo equivocado");
+		}else{
+			System.out.println("Retorno Correcto");
+		}
+	}
 	currentScope = currentScope.parent;
 :};
 declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
@@ -316,8 +325,8 @@ typeParamFunction ::= INTOK | ;
 moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
 repeatFunction ::= ENDLINE paramsFunction | ;
 returnExpect ::= RETURNTOK typeFunction:tf {:RESULT = tf;:};
-returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE {:RESULT = new ParserResult(new BooleanType());:}
-| RETURNTOK arithmetical:a ENDLINE{:RESULT = a;:};
+returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE {:RESULT = retornosFunction.add(new BooleanType());:}
+| RETURNTOK arithmetical:a ENDLINE{:RESULT = retornosFunction.add(((ParserResult)a).type);:};
 contentFunction ::= IDENTIFIER:i asign:as{:
 	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
 	ParserResult assignment = (ParserResult)as;
