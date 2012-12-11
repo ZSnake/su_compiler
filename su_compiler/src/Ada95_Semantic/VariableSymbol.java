@@ -23,6 +23,8 @@ public class VariableSymbol{
 		this.isAlive = false;
                 this.accessDescriptor = new HashSet<>();
 		this.nextUse = 0;
+                this.accessType = "";
+                this.isParameter = false;
 	}
         
 	public VariableSymbol(){

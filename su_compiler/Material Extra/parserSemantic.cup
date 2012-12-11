@@ -94,10 +94,12 @@ declaracion ::= IDENTIFIER:i{:
 :} moreDeclaracion declare assign:a ENDLINE {:
 	ParserResult resultado = (ParserResult)a;
 	for(VariableSymbol var : multipleDeclaration){
-		if(var.type.equals(resultado.type)){
-			System.out.println("La variable " + var.id + " se puede asignar, los tipos concuerdan");
-		}else{
-			System.out.println("La variable " + var.id + "no se puede asignar, los tipos NO concuerdan");
+		if(resultado != null){
+			if(var.type.equals(resultado.type)){
+				System.out.println("La variable " + var.id + " se puede asignar, los tipos concuerdan");
+			}else{
+				System.out.println("La variable " + var.id + "no se puede asignar, los tipos NO concuerdan");
+			}
 		}
 	}
 	multipleDeclaration = new ArrayList();
@@ -182,11 +184,20 @@ d ::= OPMULT f:var1 d:var2 {:
 		RESULT = p1;
 	}
 :} | {:RESULT = null;:};
-f ::= IDENTIFIER 
-| IDENTIFIER:i{:
+f ::= IDENTIFIER:i{:
 	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
-	RESULT = var.type;
-:} llamadoMetodo 
+	if(var != null){
+		if(!var.accessType.equals("out")){
+			RESULT = new ParserResult(var.type);
+		}else{
+			System.out.println("Variable de tipo out no puede ser asignada");
+			RESULT = null;
+		}
+	}else{
+		RESULT = new ParserResult(new ErrorType());
+	}
+:} 
+| IDENTIFIER llamadoMetodo 
 | NUMBER {:RESULT = new ParserResult(new IntegerType());:}
 | NUMBER POINTTOK NUMBER {: RESULT = new ParserResult(new FloatType()); :}
 | PARIZQ arithmetical:ar {:
@@ -298,23 +309,27 @@ declaracionesFunction ::= declaracion declaracionesFunction| array declaraciones
 paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
 					
 moreParamsFunction ::= ENDLINE IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction | ;
-typeFunction ::= INTEGERTOK {:RESULT = new ParserResult(new IntegerType());:} 
+typeFunction ::= INTEGERTOK {:RESULT = new ParserResult(new IntegerType());:}
 | BOOLEANTOK {:RESULT = new ParserResult(new BooleanType());:}
 | FLOATTOK {:RESULT = new ParserResult(new FloatType());:};
 typeParamFunction ::= INTOK | ;
 moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
 repeatFunction ::= ENDLINE paramsFunction | ;
-returnExpect ::= RETURNTOK typeFunction;
+returnExpect ::= RETURNTOK typeFunction:tf {:RESULT = tf;:};
 returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE {:RESULT = new ParserResult(new BooleanType());:}
 | RETURNTOK arithmetical:a ENDLINE{:RESULT = a;:};
 contentFunction ::= IDENTIFIER:i asign:as{:
 	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
 	ParserResult assignment = (ParserResult)as;
 	if(var != null){
-		if(var.type.equals(assignment.type)){
-			System.out.println("La variable "+ var.id + " se puede asignar");
+		if(!var.accessType.equals("in")){
+			if(var.type.equals(assignment.type)){
+				System.out.println("La variable "+ var.id + " se puede asignar");
+			}else{
+				System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+			}
 		}else{
-			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+			System.out.println("La variable " + var.id + " no se puede cambiar por ser de tipo in");
 		}
 	}else{
 		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
@@ -347,14 +362,22 @@ innerProcedure ::= procedure innerProcedure | function innerProcedure | ;
 contentProcedure ::= IDENTIFIER:i asign:as{:
 	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
 	ParserResult assignment = (ParserResult)as;
-	if(var != null){
-		if(var.type.equals(assignment.type)){
-			System.out.println("La variable "+ var.id + " se puede asignar");
+	if(assignment != null){
+		if(var != null){
+			if(!var.accessType.equals("in")){
+				if(var.type.equals(assignment.type)){
+					System.out.println("La variable "+ var.id + " se puede asignar");
+				}else{
+					System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+				}
+			}else{
+				System.out.println("La variable " + var.id + " no se puede modificar por ser de tipo in");
+			}
 		}else{
-			System.out.println("La variable " +var.id + "no se puede asignar, tipos no concuerdan");
+			System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
 		}
 	}else{
-		System.out.println("La variable " + ((Token)i).getIdentificador() + " no existe");
+		System.out.println("No se pueden asignar variables de tipo out");
 	}
 :} ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
 					| arrayAsign contentProcedure| if contentProcedure | while contentProcedure | loop contentProcedure | ;
