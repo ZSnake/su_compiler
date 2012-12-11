@@ -9,6 +9,8 @@ scan with {: return super.getScanner().next_token(); :};
 action code{: 
 	public SymbolTable currentScope = null;
 	public ArrayList<VariableSymbol> multipleDeclaration = new ArrayList(); 
+	public ArrayList<Object> multipleFunctionDec = new ArrayList();
+	public ArrayList<VariableSymbol> functionVariables = new ArrayList();
 	public ArrayList oids = new ArrayList();
 	public Type currentType = null;
 	
@@ -173,15 +175,51 @@ function ::= FUNCIONTOK IDENTIFIER:i
 :}
  paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE 
 {: 
+	for(int m = 0; m < functionVariables.size(); m++){
+		VariableSymbol temp = functionVariables.get(m);
+		if(currentScope.get(temp.id) == null)
+			currentScope.put(temp.id, temp);
+		else
+			System.out.println("Variable " + temp.id + " no se puede agregar porque ya existe");
+	}
+	functionVariables = new ArrayList();
+	multipleFunctionDec = new ArrayList();
 	currentScope = currentScope.parent;
-:}  paramsFunction returnExpect ISTOK declaracionesFunction BEGINTOK contentFunction ENDTOK IDENTIFIER ENDLINE ;
+:};
 declaracionesFunction ::= declaracion declaracionesFunction| array declaracionesFunction | function declaracionesFunction | ;
-paramsFunction ::= PARIZQ IDENTIFIER moreFunction ANOTATION typeParamFunction typeFunction moreParamsFunction PARDER | ;
+paramsFunction ::= PARIZQ IDENTIFIER:i{:
+	multipleFunctionDec.add(i);
+:} moreFunction ANOTATION typeParamFunction typeFunction:tf{:
+	for(int m = 0; m < multipleFunctionDec.size(); m++){
+		VariableSymbol temp = new VariableSymbol(((ParserResult)tf).type);
+		temp.id =((Token)multipleFunctionDec.get(m)).getIdentificador();
+		temp.accessType = "in";
+		temp.isParameter = true;
+		functionVariables.add(temp);
+	}
+	functionVariables = new ArrayList();
+	multipleFunctionDec = new ArrayList();
+:} moreParamsFunction PARDER | ;
 					
-moreParamsFunction ::= ENDLINE IDENTIFIER moreFunction ANOTATION typeFunction moreParamsFunction | ;
-typeFunction ::= INTEGERTOK | BOOLEANTOK | FLOATTOK | error;
+moreParamsFunction ::= ENDLINE IDENTIFIER:i{:
+	multipleFunctionDec.add(i);
+:} moreFunction ANOTATION typeFunction:tf{:
+	for(int m = 0; m < multipleFunctionDec.size(); m++){
+		VariableSymbol temp = new VariableSymbol(((ParserResult)tf).type);
+		temp.id =((Token)multipleFunctionDec.get(m)).getIdentificador();
+		temp.accessType = "in";
+		temp.isParameter = true;
+		functionVariables.add(temp);
+	}
+	multipleFunctionDec = new ArrayList();
+:} moreParamsFunction | ;
+typeFunction ::= INTEGERTOK {:RESULT = new ParserResult(new IntegerType());:} 
+| BOOLEANTOK{:RESULT = new ParserResult(new BooleanType());:} 
+| FLOATTOK{:RESULT = new ParserResult(new FloatType());:};
 typeParamFunction ::= INTOK | ;
-moreFunction ::= COMATOK IDENTIFIER moreFunction | ;
+moreFunction ::= COMATOK IDENTIFIER:i{:
+	multipleFunctionDec.add(i);
+:} moreFunction | ;
 repeatFunction ::= ENDLINE paramsFunction | ;
 returnExpect ::= RETURNTOK typeFunction;
 returnVal ::= RETURNTOK BOOLEANVALUE ENDLINE | RETURNTOK arithmetical ENDLINE;
@@ -201,6 +239,15 @@ procedure ::= PROCEDURETOK IDENTIFIER:i {:
 	}
 :} paramsProcedure ISTOK  declaracionesProcedure  BEGINTOK contentProcedure ENDTOK IDENTIFIER ENDLINE 
 {:
+	for(int m = 0; m < functionVariables.size(); m++){
+		VariableSymbol temp = functionVariables.get(m);
+		if(currentScope.get(temp.id) == null)
+			currentScope.put(temp.id, temp);
+		else
+			System.out.println("Variable " + temp.id + " no se puede agregar porque ya existe");
+	}
+	functionVariables = new ArrayList();
+	multipleFunctionDec = new ArrayList();
 	if(currentScope.parent != null){
 		currentScope = currentScope.parent;
 	}else{
@@ -213,13 +260,26 @@ declaracionesProcedure ::= declaracion declaracionesProcedure| arrayStart declar
 paramsProcedure ::= PARIZQ innerParams PARDER | PARIZQ PARDER | innerParams | ;
 innerParams ::= params moreParamsProcedure ;
 moreParamsProcedure ::= ENDLINE params moreParamsProcedure | ;
-params ::= IDENTIFIER moreProcedure ANOTATION wichParams typeProcedure | array;
-wichParams ::= INTOK | OUTTOK | INOUTTOK | ;
-moreProcedure ::= COMATOK IDENTIFIER moreProcedure | ;
+params ::= IDENTIFIER:i {:multipleFunctionDec.add(i);:} moreProcedure ANOTATION wichParams:wp typeProcedure:tp{:
+	for(int m = 0; m < multipleFunctionDec.size(); m++){
+		VariableSymbol temp = new VariableSymbol(((ParserResult)tp).type);
+		temp.id =((Token)multipleFunctionDec.get(m)).getIdentificador();
+		temp.accessType = wp.toString();
+		temp.isParameter = true;
+		functionVariables.add(temp);
+	}
+	multipleFunctionDec = new ArrayList();
+:} | array;
+wichParams ::= INTOK {:RESULT = "in";:} | OUTTOK {:RESULT = "out";:}| INOUTTOK {:RESULT = "inout";:}|{:RESULT = "in";:} ;
+moreProcedure ::= COMATOK IDENTIFIER:i {:
+	multipleFunctionDec.add(i);
+:} moreProcedure | ;
 innerProcedure ::= procedure innerProcedure | function innerProcedure | ;
 contentProcedure ::= IDENTIFIER asign ENDLINE contentProcedure | put contentProcedure | get contentProcedure| for contentProcedure 
 					| arrayAsign contentProcedure| if contentProcedure | while contentProcedure | loop contentProcedure | ;
-typeProcedure ::= INTEGERTOK | BOOLEANTOK | FLOATTOK;
+typeProcedure ::= INTEGERTOK {:RESULT = new ParserResult(new IntegerType());:} 
+| BOOLEANTOK{:RESULT = new ParserResult(new BooleanType());:} 
+| FLOATTOK{:RESULT = new ParserResult(new FloatType());:};
 
 /*----------------- conflicts --------------*/
 llamadoMetodo ::= PARIZQ variables PARDER |
