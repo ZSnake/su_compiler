@@ -16,6 +16,8 @@ public class VariableSymbol{
 	//Siguiente uso
 	public int nextUse;
         public String id;
+        public String accessType;
+        public boolean isParameter;
 
         private void postData(){
 		this.isAlive = false;
