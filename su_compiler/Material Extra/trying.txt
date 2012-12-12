@@ -16,6 +16,10 @@ begin
 		i := 12;
 	end if;
 	
+	for i in 1..3 loop
+		m := 12;
+	end loop;
+	
 	while condition loop
 		m := 13;
 	end loop;

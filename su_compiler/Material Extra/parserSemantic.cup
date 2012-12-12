@@ -11,6 +11,7 @@ scan with {: return super.getScanner().next_token(); :};
 
 action code{: 
 	public SymbolTable currentScope;
+	int range1, range2;
 	ArrayList<VariableSymbol> multipleDeclaration = new ArrayList();
 	ArrayList<Type> retornosFunction = new ArrayList();
 	public ArrayList<Quadruple> cuadruplos = new ArrayList(); //Cuadruplos de codigo intermedio
@@ -47,9 +48,7 @@ parser code{:
 terminal            PUTTOK, PARIZQ, PARDER, ENDLINE, GETTOK, COMATOK, 
 					BOOLEANVALUE, POINTTOK, ASIGNATION, ANOTATION, ARRAYTOK, LETTER, INTOK, OUTTOK, INOUTTOK, FUNCIONTOK, RETURNTOK, OFTOK, 
 					ISTOK, BEGINTOK, ENDTOK, PROCEDURETOK, TYPETOK, INTEGERTOK, BOOLEANTOK, FLOATTOK, WHILETOK, LOOPTOK, FORTOK, RANGETOK, 
-					IFTOK, THENTOK, IDENTIFIER, ELSIFTOK, ELSETOK, OPSUMA, OPMULT, OPRELACIONAL, OPBOOL, EXITTOK, WHENTOK, UNDERSCORE;
-					
-terminal Integer 	NUMBER;
+					IFTOK, THENTOK, IDENTIFIER, ELSIFTOK, ELSETOK, OPSUMA, OPMULT, OPRELACIONAL, OPBOOL, EXITTOK, WHENTOK, UNDERSCORE,NUMBER;
 
 /* Non terminals */
 /* put-get */
@@ -199,8 +198,17 @@ f ::= IDENTIFIER:i{:
 	}
 :} 
 | IDENTIFIER llamadoMetodo 
-| NUMBER {:RESULT = new ParserResult(new IntegerType());:}
-| NUMBER POINTTOK NUMBER {: RESULT = new ParserResult(new FloatType()); :}
+| NUMBER:n {:
+	RESULT = new ParserResult(new IntegerType());
+	String valueS = ((Token)n).getIdentificador();
+	range1 = Integer.parseInt(valueS);
+:}
+| NUMBER:n1 POINTTOK NUMBER:n2 {: 
+	RESULT = new ParserResult(new FloatType());
+	String values1 = ((Token)n1).getIdentificador();
+	String values2 = ((Token)n2).getIdentificador();
+	
+:}
 | PARIZQ arithmetical:ar {:
 	RESULT = (ParserResult)ar;
 :} PARDER;
@@ -233,8 +241,24 @@ else ::= ELSETOK contentIf | ;
 conditionIf ::= booleanInit;
 
 /*--------------------- FOR */
-for ::= FORTOK IDENTIFIER INTOK rangeParams RANGETOK rangeParams LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE;
-rangeParams ::= arithmetical;
+for ::= FORTOK IDENTIFIER:i INTOK NUMBER:n1 RANGETOK NUMBER:n2 {:
+	VariableSymbol temp = currentScope.get(((Token)i).getIdentificador());
+	int r1 = Integer.parseInt(((Token)n1).getIdentificador());
+	int r2 = Integer.parseInt(((Token)n2).getIdentificador());
+	if(temp != null){
+		if(temp.type.equals(new IntegerType())){
+			if(r1 < r2){
+				System.out.println("El for se puede realizar");
+			}else{
+				System.out.println("El rango es incorrecto, no soportamos for decendentes.");
+			}
+		}else{
+			System.out.println("La variable no es entera, no se puede utilizar");
+		}
+	}else{
+		System.out.println("La variable " ((Token)i).getIdentificador() + " no existe.");
+	}
+:}LOOPTOK contentFor ENDTOK LOOPTOK ENDLINE;
 contentFor ::= IDENTIFIER:i asign:as{:
 	VariableSymbol var = currentScope.get(((Token)i).getIdentificador());
 	ParserResult assignment = (ParserResult)as;
