@@ -19,13 +19,13 @@ public class Cup_main {
         //Seleccionamos la opción de dirección de destino
         opciones[0] = "-destdir";
         //Le damos la dirección
-        opciones[1] = "C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\";
+        opciones[1] = "C:\\Users\\Carlos\\Documents\\GitHub\\su_compiler\\su_compiler\\Material Extra\\";
         //Seleccionamos la opción de nombre de archivo
         opciones[2] = "-parser";
         //Le damos el nombre que queremos que tenga
-        opciones[3] = "AnalizadorSemantic";
+        opciones[3] = "Analizador";
         //Le decimos donde se encuentra el archivo .cup
-        opciones[4] = "C:\\Users\\Solid Snake\\Documents\\EntregaProyecto_10911203_10911246\\su_compiler\\Material Extra\\parserSemantic.cup";
+        opciones[4] = "C:\\Users\\Carlos\\Documents\\GitHub\\su_compiler\\su_compiler\\Material Extra\\parser.cup";
         try {
             java_cup.Main.main(opciones);
         } catch (Exception e) {

@@ -361,7 +361,7 @@ public class compi extends javax.swing.JFrame {
                     FrontEndResult parsed;
                                 parsed=(FrontEndResult)res;
                                 String assemblyName=currentFile.getPath().replace(".adb", ".asm");
-                                Backend backend=new Backend(parsed.icode, parsed.table, false);
+                                ParserCodegen backend=new ParserCodegen(parsed.icode, parsed.table, false);
                                 backend.assemble(assemblyName);
                 } catch (FileNotFoundException ex) {
                     System.err.println(ex.getMessage());
@@ -407,7 +407,7 @@ public class compi extends javax.swing.JFrame {
 					txtOutput.append("Tabla de símbolos:\n");
 					txtOutput.append(parsed.table.toString());
                     
-                    Backend backend=new Backend(parsed.icode, parsed.table, false);
+                    ParserCodegen backend=new ParserCodegen(parsed.icode, parsed.table, false);
                     backend.assemble(assemblyName);
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(this, "ERROR: El archivo que desea analizar no existe", "Wach out!", 0);

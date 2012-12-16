@@ -15,33 +15,18 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Stack;
-/**
-La súper clase de generación de código.
-Genera código final para MIPS
-@author Luis Felipe Borjas
-@date	11 dic 2009; 2353 hrs
 
-Su entrada consiste en el código intermedio y la tabla de símbolos aplanada que le pasa el 
-front-end. Antes de generar el código, particiona éste en bloques básicos y genera 
-la información de siguiente uso.
-*/
-
-public class Backend{
-	/*Lo que le pasa el backend*/
+public class ParserCodegen{
 	public ArrayList<Quadruple> icode;
 	public FlatSymbolTable st;
 	
-	/**Para debugear:*/
-	public boolean DEBUG;
-	/*Expresiones regulares*/
-	private final static String DECLARERS="function|glbl|record";
-	private final static String BBDELIMITERS="exit|if.*|goto|glblExit";
-	private final static String BEGINNERS="initFunction|initRecord|call";
+	private final static String DECLARERS="function|glbl";
+	private final static String BEGINNERS="initFunction|call";
 	private final static String JUMPS="if.*|goto";
 	private final static String ENDERS="exit|glblExit";
-	private final static String ERASABLES="function|record";
+	private final static String ERASABLES="function";
 	private final static String FE_TEMP="%t[0-9]+";
-	private final static String PSEUDOINSTRUCTIONS="initRecord|initFunction|exit|call";
+	private final static String PSEUDOINSTRUCTIONS="initFunction|exit|call";
 	private final static String INTEGER_LITERAL="[0-9]+";
 	private final static String FLOAT_LITERAL="[0-9]+\\.[0-9]+";
 	private final static String STRING_LITERAL="\".*\"";
@@ -49,15 +34,13 @@ public class Backend{
 	private final static String NOT_VAR=String.format("integer|string|float|boolean|%s", CONSTANT);
 	private final static String NOT_REGISTRABLE=String.format("integer|string|float|boolean|%s", STRING_LITERAL);
 	private final static String REGISTER="\\$[atsf][0-9]+";
-	private final static String BRANCHES="goto|call";
 	private final static String OPERATOR="if.*|add|sub|neg|not|abs|mul|div|mod|rem|put|get";
 	private final static String THREEWAY_OPERATOR="add|sub|mul|div";
 	private final static String TWINE_OPERATOR="neg|not|rem|abs";
-	private final static String PROLOGUED="initFunction|initRecord";
+	private final static String PROLOGUED="initFunction";
 	private final static String EPILOGUED="exit";
 	private final static String IN_STACK="-?([0-9])?+\\(\\$[sf]p\\)";
 	private final static String COPY=":=";
-	private final static String IMMEDIATE="[0-9]+";
 	public final static int  WORD_LENGTH=4;
 
 	/*MAPAS DE OPERACIONES:*/
@@ -73,27 +56,26 @@ public class Backend{
 	//contiene los temporales y el siguiente uso de los mismos. 
 	private HashMap<String, TempSymbol> frontEndTemps;
 	//los descriptores de registros:
-	private C1RegisterDescriptor floatDescriptor;
-	private RegisterDescriptor   regDescriptor;
+	private Reg floatDescriptor;
+	private TempReg   regDescriptor;
 	/**El constructor, recibe del front-end las cosas y del main si debuggear*/
-	public Backend(ArrayList<Quadruple> i, FlatSymbolTable t, boolean dbg){
+	public ParserCodegen(ArrayList<Quadruple> i, FlatSymbolTable t, boolean dbg){
 		data=new StringBuilder("\t.data\n");
 		text=new StringBuilder("\t.text\n");
-		this.basicBlocks=new ArrayList<BasicBlock>();
-		frontEndTemps=new HashMap<String, TempSymbol>();
-		floatDescriptor=new C1RegisterDescriptor();
-		regDescriptor=new RegisterDescriptor();
+		this.basicBlocks=new ArrayList<>();
+		frontEndTemps=new HashMap<>();
+		floatDescriptor=new Reg();
+		regDescriptor=new TempReg();
 		dataMessages=0;
 		icode=i;
 		st=t;
-		DEBUG=dbg;
 		initMaps();
 		this.icode = reorderCode(this.icode);
 		findBasicBlocks(this.icode);
 		getNextUse();
 	}
 	private void initMaps(){
-		BRANCH_OPERATIONS=new HashMap<String, String>();
+		BRANCH_OPERATIONS=new HashMap<>();
 		BRANCH_OPERATIONS.put("==", "beq");
 		BRANCH_OPERATIONS.put("/=", "bneq");
 		BRANCH_OPERATIONS.put("<", "blt");
@@ -101,7 +83,7 @@ public class Backend{
 		BRANCH_OPERATIONS.put("<=", "ble");
 		BRANCH_OPERATIONS.put(">=", "bge");
 
-		SYSTEM_SERVICES=new HashMap<String, String>();
+		SYSTEM_SERVICES=new HashMap<>();
 		SYSTEM_SERVICES.put("put_integer", "1");
 		SYSTEM_SERVICES.put("put_boolean", "1");
 		SYSTEM_SERVICES.put("put_float", "2");
@@ -118,43 +100,44 @@ public class Backend{
 	/**El método que mueve todo el código de la parte declarativa de un subprograma 
 	   al cuerpo. ¡Importante para poder generar los bloques básicos!*/	
 	private ArrayList<Quadruple> reorderCode(ArrayList<Quadruple> code){
-		if(DEBUG){
-			System.out.println("Reordenando el código intermedio...");
-		}
-		ArrayList<Quadruple> reordered=new ArrayList<Quadruple>	();
+		ArrayList<Quadruple> reordered=new ArrayList<>	();
 		//cada vez que encuentre un function, poner la parte declarativa acá
-		Stack<ArrayList<Quadruple>> declarativePart=new Stack<ArrayList<Quadruple>>();
+		Stack<ArrayList<Quadruple>> declarativePart=new Stack<>();
 		//acordate de saltarte los records!
 		boolean stackMode=false;		
-		ArrayList<Quadruple> toStack=new ArrayList<Quadruple>();
+		ArrayList<Quadruple> toStack=new ArrayList<>();
 		//reordenamiento propio
 		declarativePart.push(new ArrayList<Quadruple>());
 		for(Quadruple instruction: code){
-			if(reordered.contains(instruction))
-				continue;
+			if(reordered.contains(instruction)) {
+                            continue;
+                        }
 			//si es un declarador, meter todo en el stack
 			if(instruction.operador.matches(DECLARERS)){
 				stackMode=true;
 				if(!toStack.isEmpty()){
 					declarativePart.push(toStack);
-					toStack=new ArrayList<Quadruple>();
+					toStack=new ArrayList<>();
 				}
-				if(!instruction.operador.matches(ERASABLES))
-					reordered.add(instruction);
+				if(!instruction.operador.matches(ERASABLES)) {
+                                    reordered.add(instruction);
+                                }
 				continue;
 			}else if(instruction.operador.matches(BEGINNERS)){
 				if(!toStack.isEmpty()){
 					declarativePart.push(toStack);
-					toStack=new ArrayList<Quadruple>();
+					toStack=new ArrayList<>();
 				}
 				stackMode=false;
 				reordered.add(instruction);
 				if(!declarativePart.isEmpty()){
 					reordered.addAll(declarativePart.pop());
-					if(!declarativePart.isEmpty())
-						toStack=declarativePart.pop();
-					else
-						toStack=new ArrayList<Quadruple>();
+					if(!declarativePart.isEmpty()) {
+                                            toStack=declarativePart.pop();
+                                        }
+					else {
+                                            toStack=new ArrayList<>();
+                                        }
 				}
 				
 				continue;
@@ -171,9 +154,6 @@ public class Backend{
 	
 				
 		}
-		if(DEBUG){
-			System.out.println(String.format("Código reordenado: con %d cuádruplos",reordered.size()));
-		}
 		//ahora, arreglar los gotos:
 		int j=0;
 		for(Quadruple i: reordered){
@@ -186,9 +166,6 @@ public class Backend{
                                     i.res=String.valueOf(0-(code.indexOf(i)-reordered.indexOf(i)));
                                 }
 			}
-			if(DEBUG){
-				System.out.println(String.format("%d\t%s",j++,i));
-			}
 		}
 
 	return reordered;	
@@ -198,9 +175,8 @@ public class Backend{
 	   salidas, los if y los goto como los terminadores de un bloque. Luego de una salida
 	   no debería haber nada más que una entrada a función o record, así que está bien, no?*/
 	private void findBasicBlocks(ArrayList<Quadruple> code){
-		if(DEBUG){System.out.println("Determinando bloques básicos...");}
 		//encontrar las instrucciones líderes
-		HashSet<Integer> leaderSet=new HashSet<Integer>();
+		HashSet<Integer> leaderSet=new HashSet<>();
 		Integer iteration;
 		Quadruple instruction;
 		for(int i=1; i<code.size();i++){
@@ -208,8 +184,9 @@ public class Backend{
 			iteration=new Integer(i);
 			if(instruction.operador.matches(JUMPS)){
 				leaderSet.add(new Integer(instruction.res));
-				if(i <= code.size()-1)					
-					leaderSet.add(iteration+1);
+				if(i <= code.size()-1) {
+                                    leaderSet.add(iteration+1);
+                                }
 			}else if(instruction.operador.matches(BEGINNERS)){
 				leaderSet.add(iteration);
 			}
@@ -219,29 +196,23 @@ public class Backend{
 			}
 		}
 		//convertir el set en lista:		
-		ArrayList<Integer> leaders=new ArrayList<Integer>();		
+		ArrayList<Integer> leaders=new ArrayList<>();		
 		leaders.addAll(leaderSet);
 		//ordenar los líderes:
 		Collections.sort(leaders);
-		if(DEBUG){System.out.println(String.format("Son líderes: %s",leaders));}
 		Integer leader;
 		String label;
 		int i;
 		for(i=0;i<leaders.size()-1;i++){
 			leader=leaders.get(i).intValue();
 			instruction=code.get(leader);
-			label=(instruction.operador.matches("initFunction|initRecord")) ? instruction.arg1 : String.format("%s%d", "label",i);
+			label=(instruction.operador.matches("initFunction")) ? instruction.arg1 : String.format("%s%d", "label",i);
 			this.basicBlocks.add(
 					new BasicBlock(label, leader, leaders.get(i+1).intValue()-1)
 				);
 		}
 		//terminar el último bloque básico:
 		this.basicBlocks.add(new BasicBlock(String.format("%s%d", "label", i), leaders.get(i++), code.size()-1));
-		
-		if(DEBUG){
-			for(BasicBlock b: this.basicBlocks)
-				System.out.println(b);
-		}
 	}//findBasicBlocks
 
 	/**Función que establece la información de una variable*/
@@ -285,12 +256,11 @@ public class Backend{
 	*  OBSTACULOS: alguna de las direcciones podría no estar en ninguna tabla o ser una constante
 		       no debería generar para pseudo-instrucciones*/
 	private void getNextUse(){
-		if(DEBUG){System.out.println("Determinando la información de siguiente uso...");}
 		Quadruple instruction;
 		String currentScope="";
 		VarInfo temp;
 		VariableSymbol var;
-		HashMap<String, String> dirs=new HashMap<String, String>(3);
+		HashMap<String, String> dirs=new HashMap<>(3);
 		for(BasicBlock block: this.basicBlocks){
 			for(int i=block.end; i>=block.beginning;i--){
 				instruction=icode.get(i);
@@ -298,8 +268,9 @@ public class Backend{
 					currentScope=instruction.arg1;				
 				}
 				//no generar info de siguiente uso para estas:
-				if(instruction.operador.matches(PSEUDOINSTRUCTIONS))
-					continue;
+				if(instruction.operador.matches(PSEUDOINSTRUCTIONS)) {
+                                    continue;
+                                }
 				//hay instrucciones que no tienen ninguna dirección
 				if(!instruction.res.isEmpty()){dirs.put("res", instruction.res);}
 				if(!instruction.arg1.isEmpty()){dirs.put("arg1", instruction.arg1);}
@@ -307,7 +278,7 @@ public class Backend{
 				//adjuntar a la instrucción la info en la st de las variables
 				for(Map.Entry dir: dirs.entrySet()){
 					if(dir.getValue().toString().matches(FE_TEMP)){//es un temporal
-						temp=this.frontEndTemps.get(dir.getValue()).info;
+						temp = this.frontEndTemps.get(dir.getValue().toString()).info;
 						instruction.info.put(
 							dir.getKey().toString(),
 							temp
@@ -332,14 +303,6 @@ public class Backend{
 		
 			}//iterar en reversa sobre las instrucciones del bloque básico.
 		}//por cada bloque básico
-
-		if(DEBUG){
-			System.out.println("La información de siguiente uso:");
-			System.out.printf("La tabla de símbolos:\n %s ", this.st.toString());
-			for(Map.Entry v: this.frontEndTemps.entrySet()){
-				System.out.printf("%s: %s\n", v.getKey(), v.getValue());
-			}
-		}
 	}//getNextuse
 
 	/**La función para obtener los registros de una instrucción:
@@ -352,21 +315,21 @@ public class Backend{
 		//determinar el tipo: ¿cómo saber el tipo para instrucciones tipo $t1=$t1+$t3 ?
 		/*En todas las operaciones enteras, el segundo operando puede ser una constante, entonces
 		  Si es constante, no nos tomemos la molestia de buscarle un registro.*/
-		HashMap<String, String> dirs=new HashMap<String, String>();		
+		HashMap<String, String> dirs=new HashMap<>();		
 		dirs.put("y", I.arg1);
 		if(!isCopy){
 			dirs.put("z", I.arg2);
 			dirs.put("x", I.res);
 		}
-		HashMap<String, String> retVal=new HashMap<String, String>();
+		HashMap<String, String> retVal=new HashMap<>();
 		//conseguir registros para x, y und z
 		String key, value, register;		
-		HashSet<String> accessDescriptor=new HashSet<String>();
-		HashSet<String> regdesc=new HashSet<String>();
-		int regScore=0;
-		HashMap<String, Integer> scores=new HashMap<String, Integer>();
+		HashSet<String> accessDescriptor=new HashSet<>();
+		HashSet<String> regdesc;
+		int regScore;
+		HashMap<String, Integer> scores=new HashMap<>();
 		VarInfo v_info;
-		boolean inReg=false;
+		boolean inReg;
 		for(Map.Entry dir: dirs.entrySet()){
 			inReg=false;
 			key=dir.getKey().toString();
@@ -377,22 +340,9 @@ public class Backend{
 				!(value.matches(INTEGER_LITERAL) && (key.equals("z") || key.equals("x")))){
 				//1. Ver si YA está en un registro.
 				if(value.matches(FE_TEMP)){//es un temporal
-                                        System.out.println(currentScope);
-                                        System.out.println(value);
-                                        System.out.println(this.st.get(currentScope, value).symbol);
-                                        System.out.println(this.text);
 					accessDescriptor=this.frontEndTemps.get(value).accessDescriptor;
 				}else if(!value.matches(INTEGER_LITERAL) && this.st.get(currentScope, value).symbol != null){
-                                        System.out.println(currentScope);
-                                        System.out.println(value);
-                                        System.out.println(I.operador);
-                                        System.out.println(I.arg1);
-                                        System.out.println(I.arg2);
-                                        System.out.println(I.res);
-                                        System.out.println(I.info.toString());
-                                        System.out.println(this.st.get(currentScope, value).symbol);
-                                        System.out.println(this.text);
-					accessDescriptor=this.st.get(currentScope, value).symbol.accessDescriptor;
+                                        accessDescriptor=this.st.get(currentScope, value).symbol.accessDescriptor;
 				}	
 				for(String place: accessDescriptor){
 					//si está en un registro, devolverlo. Ya terminamos con esta var.
@@ -405,7 +355,7 @@ public class Backend{
 				}//iterar en el descriptor de acceso
 				if(inReg){continue;}
 				//2. Aún aquí? Ok. Tratemos de darle un registro vacío:				
-				LinkedHashSet<String> attempts=new LinkedHashSet<String>();
+				LinkedHashSet<String> attempts=new LinkedHashSet<>();
 				register=this.regDescriptor.getEmpty();				
 				attempts.add(register);
 				//si ya está, seguir buscando hasta que encontremos uno vacío:
@@ -460,9 +410,9 @@ public class Backend{
 				String lesserReg="";
 				for(Map.Entry s: scores.entrySet()){
 					current=((Integer)s.getValue()).intValue();
-					if(current < lesser && !retVal.containsValue(s.getKey().toString()))
-						lesserReg=s.getKey().toString();
-					
+					if(current < lesser && !retVal.containsValue(s.getKey().toString())) {
+                                            lesserReg=s.getKey().toString();
+                                        }
 				}
 				retVal.put(key, lesserReg);
 			}else{
@@ -484,8 +434,9 @@ public class Backend{
 	private String getLabel(String destino){
 		int destino_entero=Integer.parseInt(destino);
 		for(BasicBlock b: this.basicBlocks){
-			if(b.beginning==destino_entero) 
-				return b.label;
+			if(b.beginning==destino_entero) {
+                            return b.label;
+                        }
 		}
 		return "ERROR";
 	}
@@ -502,7 +453,7 @@ public class Backend{
 		HashSet<String> blockVariables;
 		LinkedHashSet<String> pushedTemps; //los temporales que un bloque guarde
 		HashMap<String, String> registros;
-		HashSet<String> ad=new HashSet<String>();
+		HashSet<String> ad;
 		String mainProcedure="";
 		//poner global función principal y ponerle main también, porque MIPS la ocupa
 		if(icode.get(0).operador.matches("glbl")){
@@ -513,28 +464,27 @@ public class Backend{
 		}
 		for(BasicBlock block: this.basicBlocks){
 			//reinicializar las variables del bloque
-			blockVariables=new HashSet<String>();
-			pushedTemps=new LinkedHashSet<String>();
+			blockVariables=new HashSet<>();
+			pushedTemps=new LinkedHashSet<>();
 			//poner la etiqueta:
-			if(block.label.equals(mainProcedure) || this.basicBlocks.size() == 1)
-				text.append("main:\n");
+			if(block.label.equals(mainProcedure) || this.basicBlocks.size() == 1) {
+                            text.append("main:\n");
+                        }
 			text.append(String.format("_%s:\n", block.label));
 			//por cada instrucción en este bloque:
 			for(int i=block.beginning; i<=block.end; i++){
 				instruction=this.icode.get(i);
-				if(DEBUG){
-					System.out.printf("Procesando %s\n", instruction);
-				}
 				//al final del bloque básico, guardar las variables vivas:
 				if(i==block.end){
 					/*TODO: guardar variables vivas!*/
 					for(String blockVar: blockVariables){
 						if(blockVar.matches(FE_TEMP)){
 						//si es temporal, dejémosla morir:
-							HashSet <String>key=new HashSet<String>();
+							HashSet <String>key;
 							for(String place: this.frontEndTemps.get(blockVar).accessDescriptor){
-								if((key=this.regDescriptor.get(place)) != null)
-									key.remove(blockVar);
+								if((key=this.regDescriptor.get(place)) != null) {
+                                                                    key.remove(blockVar);
+                                                                }
 							}
 						/* O LA GUARDAMOS?
 							if(this.frontEndTemps.get(blockVar).info.isAlive){
@@ -715,8 +665,8 @@ public class Backend{
 					
 				}//copia
 		
-				/*fin de las que ocupan registros.*/			
-			}//por cada instrucción en el bloque
+				
+			}
 			
 		}//por cada bloque
 		writeCodeFile(filename);
@@ -724,7 +674,7 @@ public class Backend{
 
 	private void createLoad(String currentScope, String arg, String namen, HashMap<String,String> registros){
 		if(!arg.isEmpty() && !arg.matches(NOT_REGISTRABLE) && !arg.matches(INTEGER_LITERAL)){
-			HashSet<String> ad=new HashSet<String>();
+			HashSet<String> ad=new HashSet<>();
 			//tiene que ser una variable o algo va?
 			String l=getLocation(currentScope, arg);
 			if(arg.matches(FE_TEMP)){
@@ -755,17 +705,17 @@ public class Backend{
 			);
 		}
 		
-	}//createLoad		
-	/**Mira el registro de acceso de la variable y devuelve una ubicación*/
+	}
 	private String getLocation(String currentScope, String symbol){
 		//si es constante, sólo regresarlo
-		if(symbol.matches(CONSTANT))
-			return symbol;
-		//si es temporal, buscar allá		
+		if(symbol.matches(CONSTANT)) {
+                    return symbol;
+                }
+		
 		if(symbol.matches(FE_TEMP)){
 			return this.frontEndTemps.get(symbol).accessDescriptor.iterator().next().toString();	
 		}
-		//si no, es variable, buscar en la st
+	
                 if (!this.st.get(currentScope, symbol).symbol.accessDescriptor.isEmpty()) {
                     return this.st.get(currentScope, symbol).symbol.accessDescriptor.iterator().next().toString();
                 }
@@ -773,32 +723,33 @@ public class Backend{
 	}
 
 	private String getLoadInstruction(String var){
-		if(var.matches(CONSTANT))
-			return "li";
-		if(var.matches(REGISTER))
-			return "move";
-		if(var.matches(IN_STACK))
-			return "lw";
+		if(var.matches(CONSTANT)) {
+                    return "li";
+                }
+                else if(var.matches(REGISTER)) {
+                    return "move";
+                }
+                else if(var.matches(IN_STACK)) {
+                    return "lw";
+                }
 		//si sale otra cosa, estamos mal!!
 		return "ERROR";
 	}
 	
-	/**Función de conveniencia que genera la instrucción máquina correspondiente al operador
-	   Rz podría ser un valor inmediato...*/
 	private void generateInstruction(Quadruple instruction, String rx, String ry, String rz){
 		String operador=instruction.operador;
-		String machineOperator="";
+		String machineOperator;
 		if(operador.matches("if.*")){
 			//sacar el operador relacional
 			String rel=operador.split("_")[1];
 			//obtener la correspondiente instrucción:
 			machineOperator=BRANCH_OPERATIONS.get(rel);
-			//generar la instrucción máquina
+			
 			text.append(String.format("\t%s %s, %s, _%s\n", machineOperator, ry, rz, getLabel(instruction.res)));
 		}else if(operador.matches("put")){
 			String service=SYSTEM_SERVICES.get(String.format("put_%s", instruction.arg1));
 			text.append(String.format("\tli $v0, %s\n", service));
-			//sólo trabajar con el segundo parámetro:
+			
 			if(instruction.arg1.equalsIgnoreCase("string")){
 				String message=String.format("_msg%d", dataMessages++);
 				data.append(String.format("%s: .asciiz %s\n", message, instruction.arg2));
@@ -808,17 +759,17 @@ public class Backend{
 			}
 							
 		}else if(operador.matches("get")){
-			//trabajar con el resultado
+			
 			String service=SYSTEM_SERVICES.get(String.format("get_%s", instruction.arg1));
 			text.append(String.format("\tli $v0, %s\n\tsyscall\n", service));
 			text.append(String.format("\tmove %s, $v0\n", rx));
 		}else if(operador.matches(THREEWAY_OPERATOR)){
-			//should be seamless...
+			
 			text.append(String.format("\t%s %s, %s, %s\n", operador, rx, ry, rz));
 		}else if(operador.matches(TWINE_OPERATOR)){
 			text.append(String.format("\t%s %s, %s\n", operador, rx, ry));
 		}
-	}//generateInstruction
+	}
 
 	private void writeCodeFile(String filename){
 		File archivo=new File(filename);
@@ -839,5 +790,5 @@ public class Backend{
 			}
 		}
 	}
-}//generator
+}
 
