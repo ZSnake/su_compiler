@@ -1,5 +1,6 @@
 package Ada95_Semantic;
 
+import static Ada95_Codegen.VarInfo.UNUSED;
 import java.util.HashSet;
 
 public class VariableSymbol{
@@ -15,16 +16,11 @@ public class VariableSymbol{
 	public boolean isAlive;
 	//Siguiente uso
 	public int nextUse;
-        public String id;
-        public String accessType;
-        public boolean isParameter;
 
         private void postData(){
 		this.isAlive = false;
-                this.accessDescriptor = new HashSet<>();
+                this.accessDescriptor = new HashSet<String>();
 		this.nextUse = 0;
-                this.accessType = "";
-                this.isParameter = false;
 	}
         
 	public VariableSymbol(){
@@ -58,15 +54,15 @@ public class VariableSymbol{
 		this.address = 0x0;
 		this.constant = cons;
                 this.isAlive = false;
-		this.nextUse = 0;
-		this.accessDescriptor = new HashSet<>();
+		this.nextUse = UNUSED;
+		this.accessDescriptor = new HashSet<String>();
 		this.accessDescriptor.add(initialPlace);
 	}
     @Override
 	public String toString(){
 		String cons = (constant) ? "Constant ":"";
-		return String.format("%s%s@%s",
-					 cons, type, address);
+		return String.format("%s%s@%s|alive: %s next use: %d; stored in %s",
+					 cons, type, address, isAlive, nextUse, accessDescriptor);
 	}
     
         

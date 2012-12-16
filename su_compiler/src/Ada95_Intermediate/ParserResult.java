@@ -13,7 +13,7 @@ public class ParserResult{
 		this.type = null;
 		this.value = null;
 		this.clean = true;
-		this.backpatch = null;
+		this.backpatch = new BackPatchResult();
 		this.place = null;
 	}
 

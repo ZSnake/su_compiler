@@ -62,6 +62,11 @@ public class SymbolTable{
 		soid = soid.toLowerCase();
 		if(!(this.table.containsKey(soid))){
 			type.address = this.relAddress;
+                        String disp;
+                        if(type.accessDescriptor.isEmpty()){
+				disp=(type.address==0)? "" : String.valueOf(type.address);
+				type.accessDescriptor.add(String.format("%s($fp)", disp));
+			}
 			relAddress += type.type.width;
 			table.put(soid, type);
 			return true;
@@ -90,7 +95,15 @@ public class SymbolTable{
 		if (found == null) {	
 			return null;
                 }
-		return found;
+		return null;
+	}
+        
+        public String getFlatId(){
+		String ret=this.id;
+		for(SymbolTable t = this.getParent(); t != null; t=t.getParent()){
+			ret=(ret.isEmpty()) ? t.id : t.id+"__"+ret;
+		}
+		return ret;
 	}
 
 	public void addChild(SymbolTable child){

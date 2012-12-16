@@ -44,6 +44,6 @@ public class StringType extends Type{
 
     @Override
     public boolean isPrimitive() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
 }

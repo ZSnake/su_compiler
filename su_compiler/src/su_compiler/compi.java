@@ -3,6 +3,8 @@
  * and open the template in the editor.
  */
 package su_compiler;
+import Ada95_Intermediate.*;
+import Ada95_Codegen.*;
 import java.io.*;
 import java.awt.Dimension;
 import java.util.logging.Level;
@@ -339,19 +341,28 @@ public class compi extends javax.swing.JFrame {
                         guardarArchivo();
                     lexer scanner = new lexer(new FileInputStream(currentFile));
                     al = new Analizador(scanner);
-                    als = new AnalizadorSemantic(scanner);
                     al.parse();
-                    als.parse();
-//                    if(als.action_obj.currentScope != null)
-//                        JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
-//                    else    
-//                        JOptionPane.showMessageDialog(this, "):", "Wach out!", 0);
+                    
                     txtOutput.setText("");
                     txtOutput.append(al.imprimirErrores() + "\n ---------------------------------------\n");
-                    txtOutput.append("Se han encontrado " + scanner.contadorErroresLexicos + " errores lexicos\n");
+                    txtOutput.append("Se han encontrado " + 6 + " errores lexicos\n");
                     txtOutput.append(scanner.erroresLexicos);
                     txtOutput.append("Fin de analisis " + "\n ---------------------------------------\n");
+                    txtOutput.append("Entro aqui " + "\n ---------------------------------------\n");
 
+                    //semantico
+                    Object res;
+                    lexer lss = new lexer(new FileInputStream(currentFile));
+                    ls = new parserSemantic(lss);
+                    res = ls.parse().value;
+                    
+                    
+                    //asumiendo esta bueno
+                    FrontEndResult parsed;
+                                parsed=(FrontEndResult)res;
+                                String assemblyName=currentFile.getPath().replace(".adb", ".asm");
+                                Backend backend=new Backend(parsed.icode, parsed.table, false);
+                                backend.assemble(assemblyName);
                 } catch (FileNotFoundException ex) {
                     System.err.println(ex.getMessage());
                 } catch (Exception e){
@@ -363,7 +374,7 @@ public class compi extends javax.swing.JFrame {
             try {
                     lexer scanner = new lexer(new FileInputStream(currentFile));
                     al = new Analizador(scanner);
-                    als = new AnalizadorSemantic(scanner);
+                    //als = new AnalizadorSemantic(scanner);
                     al.parse();
                     //als.parse();
                     
@@ -377,6 +388,19 @@ public class compi extends javax.swing.JFrame {
                     txtOutput.append(scanner.erroresLexicos);
                     txtOutput.append("Fin de analisis " + "\n ---------------------------------------\n");
                     
+                    //semantico
+                    Object res;
+                    LexerSemantic lss = new LexerSemantic(new FileInputStream(currentFile));
+                    ls = new parserSemantic(lss);
+                    res = ls.parse().value;
+                    
+                    //asumiendo esta bueno
+                    FrontEndResult parsed;
+                    parsed=(FrontEndResult)res;
+                    String assemblyName=currentFile.getPath().replace(".adb", ".asm");
+                    //txtOutput.append(ls.getErrores().toString());
+                    Backend backend=new Backend(parsed.icode, parsed.table, false);
+                    backend.assemble(assemblyName);
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(this, "ERROR: El archivo que desea analizar no existe", "Wach out!", 0);
                     e.printStackTrace();
@@ -494,7 +518,7 @@ public class compi extends javax.swing.JFrame {
     private File currentFile;
     private boolean hasChanged;
     private Analizador al;
-    private AnalizadorSemantic als;
+    private parserSemantic ls;
     private FileFilter ff;
 
 }
