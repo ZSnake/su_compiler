@@ -60,9 +60,8 @@ public class VariableSymbol{
 	}
     @Override
 	public String toString(){
-		String cons = (constant) ? "Constant ":"";
-		return String.format("%s%s@%s|alive: %s next use: %d; stored in %s",
-					 cons, type, address, isAlive, nextUse, accessDescriptor);
+		return String.format("type: %s, address: %s, alive: %s, next use: %d",
+					 type, address, isAlive, nextUse);
 	}
     
         

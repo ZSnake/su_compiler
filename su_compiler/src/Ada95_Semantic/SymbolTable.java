@@ -101,7 +101,7 @@ public class SymbolTable{
         public String getFlatId(){
 		String ret=this.id;
 		for(SymbolTable t = this.getParent(); t != null; t=t.getParent()){
-			ret=(ret.isEmpty()) ? t.id : t.id+"__"+ret;
+			ret=(ret.isEmpty()) ? t.id : t.id+"_"+ret;
 		}
 		return ret;
 	}

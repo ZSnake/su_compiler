@@ -399,6 +399,14 @@ public class compi extends javax.swing.JFrame {
                     parsed=(FrontEndResult)res;
                     String assemblyName=currentFile.getPath().replace(".adb", ".asm");
                     //txtOutput.append(ls.getErrores().toString());
+                    
+                    txtOutput.append(String.format("Generados %d cuadruplos:\n",parsed.icode.size()));
+					for(int i=0; i< parsed.icode.size(); i++){
+						txtOutput.append(String.format("%d\t%s\n", i, parsed.icode.get(i)));
+					}
+					txtOutput.append("Tabla de símbolos:\n");
+					txtOutput.append(parsed.table.toString());
+                    
                     Backend backend=new Backend(parsed.icode, parsed.table, false);
                     backend.assemble(assemblyName);
                 } catch (Exception e){

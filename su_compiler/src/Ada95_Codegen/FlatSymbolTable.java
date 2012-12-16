@@ -31,7 +31,7 @@ public class FlatSymbolTable{
 	public String toString(){
 		StringBuilder s=new StringBuilder();
 		for(Map.Entry entry: table.entrySet()){
-			s.append(String.format("%s\t|\t{%s}\n", entry.getKey(), entry.getValue()));
+			s.append(String.format("%s -> %s\n", entry.getKey(), entry.getValue()));
 		}
 		return s.toString();
 	}
@@ -40,7 +40,7 @@ public class FlatSymbolTable{
 	public SymbolLookup get(String currentScope, String key){
 		if (currentScope.isEmpty())
 			return new SymbolLookup(0, this.table.get(key));
-		String[] tokenized=currentScope.split("__");
+		String[] tokenized=currentScope.split("_");
 		StringBuilder finder=new StringBuilder(currentScope);
 		String lookup=currentScope;
 		VariableSymbol found=new VariableSymbol();
@@ -51,7 +51,7 @@ public class FlatSymbolTable{
 			if ((found=this.table.get(l_key)) != null)
 				break;
 			q_depth=tokenized.length-i;
-			lookup=(i==0)? tokenized[i] : finder.substring(0, finder.lastIndexOf("__"+tokenized[i]));
+			lookup=(i==0)? tokenized[i] : finder.substring(0, finder.lastIndexOf("_"+tokenized[i]));
 			l_key=lookup+"."+key;
 		}
 

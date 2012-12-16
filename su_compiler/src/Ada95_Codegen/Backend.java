@@ -178,8 +178,13 @@ public class Backend{
 		int j=0;
 		for(Quadruple i: reordered){
 			if(i.operador.matches(JUMPS)){
-				i.res=String.valueOf(Integer.parseInt(i.res)
-			              -(code.indexOf(i)-reordered.indexOf(i)));
+                                if (!"".equals(i.res)) {
+                                    i.res=String.valueOf(Integer.parseInt(i.res)
+                                          -(code.indexOf(i)-reordered.indexOf(i)));
+                                }
+                                else {
+                                    i.res=String.valueOf(0-(code.indexOf(i)-reordered.indexOf(i)));
+                                }
 			}
 			if(DEBUG){
 				System.out.println(String.format("%d\t%s",j++,i));
@@ -372,8 +377,21 @@ public class Backend{
 				!(value.matches(INTEGER_LITERAL) && (key.equals("z") || key.equals("x")))){
 				//1. Ver si YA está en un registro.
 				if(value.matches(FE_TEMP)){//es un temporal
+                                        System.out.println(currentScope);
+                                        System.out.println(value);
+                                        System.out.println(this.st.get(currentScope, value).symbol);
+                                        System.out.println(this.text);
 					accessDescriptor=this.frontEndTemps.get(value).accessDescriptor;
-				}else if(!value.matches(INTEGER_LITERAL)){					
+				}else if(!value.matches(INTEGER_LITERAL) && this.st.get(currentScope, value).symbol != null){
+                                        System.out.println(currentScope);
+                                        System.out.println(value);
+                                        System.out.println(I.operador);
+                                        System.out.println(I.arg1);
+                                        System.out.println(I.arg2);
+                                        System.out.println(I.res);
+                                        System.out.println(I.info.toString());
+                                        System.out.println(this.st.get(currentScope, value).symbol);
+                                        System.out.println(this.text);
 					accessDescriptor=this.st.get(currentScope, value).symbol.accessDescriptor;
 				}	
 				for(String place: accessDescriptor){
@@ -423,10 +441,11 @@ public class Backend{
 							good=true;
 						}
 						//si v no se utiliza otra vez en este bloque:
-						else if(v_info.nextUse< instruction)
-							good=true;
+						else if(v_info != null && v_info.nextUse< instruction) {
+                                                    good=true;
+                                                }
 						//ni aún así? Generar un derrame:
-						else if(!var.matches(FE_TEMP)){
+						else if(v_info != null && !var.matches(FE_TEMP)){
 							store(currentScope, var);
 							regScore++;
 						}
@@ -557,14 +576,13 @@ public class Backend{
 					//reservar el espacio para variables:
 					text.append(String.format("\tsub $fp, $sp, %d\n", variable_space));
 					//inicializar el stack pointer:
-					text.append("\tmove $sp, $fp\n\t#BODY:\n");					
+					text.append("\tmove $sp, $fp\n");					
 					currentScope=instruction.arg1;
 					continue;
 				}//prologadas
 
 				//si es un epílogo, escribirlo
 				if(instruction.operador.matches(EPILOGUED)){
-					text.append("\t#EPILOGUE:\n");
 					//poner la etiqueta:
 					text.append(String.format("_exit_%s:\n", instruction.arg1));
 					//reestablecer el sp:
@@ -711,7 +729,7 @@ public class Backend{
 			String l=getLocation(currentScope, arg);
 			if(arg.matches(FE_TEMP)){
 				ad=this.frontEndTemps.get(arg).accessDescriptor;
-			}else{
+			}else if (this.st.get(currentScope,arg).symbol != null){
 				ad=this.st.get(currentScope,arg).symbol.accessDescriptor;
 			}
 			if(!ad.contains(registros.get(namen))){
@@ -748,8 +766,10 @@ public class Backend{
 			return this.frontEndTemps.get(symbol).accessDescriptor.iterator().next().toString();	
 		}
 		//si no, es variable, buscar en la st
-		return this.st.get(currentScope, symbol).symbol.accessDescriptor.iterator().next().toString();
-	
+                if (!this.st.get(currentScope, symbol).symbol.accessDescriptor.isEmpty()) {
+                    return this.st.get(currentScope, symbol).symbol.accessDescriptor.iterator().next().toString();
+                }
+                return "0";
 	}
 
 	private String getLoadInstruction(String var){
