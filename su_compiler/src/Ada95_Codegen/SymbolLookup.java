@@ -1,4 +1,5 @@
 package Ada95_Codegen;
+
 import Ada95_Semantic.VariableSymbol;
 
 public class SymbolLookup{
@@ -15,6 +16,7 @@ public class SymbolLookup{
 		symbol=sym;
 	}
 
+    @Override
 	public String toString(){
 		return String.format("%d {%s}", saltos, symbol);
 	}

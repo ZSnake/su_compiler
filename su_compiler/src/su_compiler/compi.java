@@ -3,23 +3,18 @@
  * and open the template in the editor.
  */
 package su_compiler;
-import Ada95_Intermediate.*;
 import Ada95_Codegen.*;
-import java.io.*;
+import Ada95_Intermediate.*;
 import java.awt.Dimension;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.*;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.Document;
 
 /**
  *
  * @author Sharon Montenegro
  */
-public class compi extends javax.swing.JFrame {
+public final class compi extends javax.swing.JFrame {
 
     /**
      * Creates new form compi
@@ -29,8 +24,6 @@ public class compi extends javax.swing.JFrame {
         drawCodeEditor();
         currentFile = null;
         hasChanged = false;
-
-        
     }
     
     public void drawCodeEditor(){
@@ -45,6 +38,7 @@ public class compi extends javax.swing.JFrame {
         localJScrollPane.setRowHeaderView(localTextLineNumber);
         container.setDefaultCloseOperation(3);
         localJTextPane.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 localJTextPaneKeyPressed(evt);
             }
@@ -58,14 +52,14 @@ public class compi extends javax.swing.JFrame {
     }
     
     private void localJTextPaneKeyPressed(java.awt.event.KeyEvent evt) {
-        if(!evt.isActionKey())
+        if(!evt.isActionKey()) {
             hasChanged = true;
-            
+        }
     }
     
     public void leerArchivo(){
         FileReader fr = null;
-        BufferedReader br = null;
+        BufferedReader br;
         JFileChooser fc = new JFileChooser();
         FileNameExtensionFilter ff = new FileNameExtensionFilter("Archivos de ADA(*.adb)", "adb");
         fc.setFileFilter(ff);
@@ -80,8 +74,9 @@ public class compi extends javax.swing.JFrame {
                 // Lectura del fichero
                 String linea;
                 localJTextPane.setText("");
-                while((linea=br.readLine())!=null)
+                while((linea=br.readLine())!=null) {
                     localJTextPane.setText(localJTextPane.getText() + linea + "\n");
+                }
             }
             catch(Exception e){
                 txtOutput.setText(e.getMessage());
@@ -91,7 +86,7 @@ public class compi extends javax.swing.JFrame {
                         fr.close();     
                     }                  
                 }catch (Exception e2){ 
-                    JOptionPane.showMessageDialog(this, "ERROR: no se puede cerrar el archivo, no se completo la escritura.", "Wach out!", 3);
+                    JOptionPane.showMessageDialog(this, "ERROR: no se puede cerrar el archivo, no se completo la escritura.", "Watch out!", 3);
                 }
             }
         }
@@ -105,22 +100,23 @@ public class compi extends javax.swing.JFrame {
         String path;
         try{
             path = currentFile.getAbsolutePath();
-            if(currentFile.exists())
+            if(currentFile.exists()) {
                 currentFile.delete();
+            }
             currentFile = new File(path);
             fr = new FileWriter(currentFile);
             pw = new PrintWriter(fr);
             pw.println(localJTextPane.getText().replaceAll("\n", "\r\n"));
             hasChanged = false;
         }catch(Exception e){
-            JOptionPane.showMessageDialog(this, "ERROR: Error al guardar el archivo, es probable que no exista.", "Wach out!", 3);
+            JOptionPane.showMessageDialog(this, "ERROR: Error al guardar el archivo, es probable que no exista.", "Watch out!", 3);
         }
         try {
             fr.close();
             JOptionPane.showMessageDialog(this, "Archivo guardado exitosamente.", "Hey! Listen!", 1);
         } catch (IOException ex) {
             
-            JOptionPane.showMessageDialog(this, "ERROR: no se puede cerrar el archivo, no se completo la escritura.", "Wach out!", 3);
+            JOptionPane.showMessageDialog(this, "ERROR: no se puede cerrar el archivo, no se completo la escritura.", "Watch out!", 3);
         }
     }
     
@@ -139,13 +135,13 @@ public class compi extends javax.swing.JFrame {
             pw.println(localJTextPane.getText().replaceAll("\n", "\r\n"));
             hasChanged = false;
         }catch(Exception e){
-            JOptionPane.showMessageDialog(this, "ERROR: no se ha podido escribir el archivo, es probable que no exista.", "Wach out!", 3);
+            JOptionPane.showMessageDialog(this, "ERROR: no se ha podido escribir el archivo, es probable que no exista.", "Watch out!", 3);
         }
         try {
             fr.close();
             JOptionPane.showMessageDialog(this, "Archivo guardado exitosamente.", "Hey! Listen!", 1);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "ERROR: no se puede cerrar el archivo, no se completo la escritura.", "Wach out!", 3);
+            JOptionPane.showMessageDialog(this, "ERROR: no se puede cerrar el archivo, no se completo la escritura.", "Watch out!", 3);
         }
     }
     
@@ -330,48 +326,16 @@ public class compi extends javax.swing.JFrame {
                                     f.createNewFile();
                                     guardarArchivo(f, true);
                                 } catch (IOException ex) {
-                                    JOptionPane.showMessageDialog(this, "ERROR: no se puede guardar el archivo.", "Wach out!", 3);
+                                    JOptionPane.showMessageDialog(this, "ERROR: no se puede guardar el archivo.", "Watch out!", 3);
                                 }
                             }else{
                                 guardarArchivo(f, false);
                             }
 
                         }
-                    }else
+                    }else {
                         guardarArchivo();
-                    lexer scanner = new lexer(new FileInputStream(currentFile));
-                    al = new Analizador(scanner);
-                    al.parse();
-                    
-                    txtOutput.setText("");
-                    txtOutput.append(al.imprimirErrores() + "\n ---------------------------------------\n");
-                    txtOutput.append("Se han encontrado " + 6 + " errores lexicos\n");
-                    txtOutput.append(scanner.erroresLexicos);
-                    txtOutput.append("Fin de analisis " + "\n ---------------------------------------\n");
-                    txtOutput.append("Entro aqui " + "\n ---------------------------------------\n");
-
-                    //semantico
-                    Object res;
-                    lexer lss = new lexer(new FileInputStream(currentFile));
-                    ls = new parserSemantic(lss);
-                    res = ls.parse().value;
-                    
-                    
-                    //asumiendo esta bueno
-                    FrontEndResult parsed;
-                                parsed=(FrontEndResult)res;
-                                String assemblyName=currentFile.getPath().replace(".adb", ".asm");
-                                ParserCodegen backend=new ParserCodegen(parsed.icode, parsed.table, false);
-                                backend.assemble(assemblyName);
-                } catch (FileNotFoundException ex) {
-                    System.err.println(ex.getMessage());
-                } catch (Exception e){
-                    System.err.println(e.getMessage());
-                }
-            }
-        }
-        else{
-            try {
+                    }
                     lexer scanner = new lexer(new FileInputStream(currentFile));
                     al = new Analizador(scanner);
                     //als = new AnalizadorSemantic(scanner);
@@ -379,9 +343,9 @@ public class compi extends javax.swing.JFrame {
                     //als.parse();
                     
 //                    if(als.action_obj.currentScope != null)
-//                        JOptionPane.showMessageDialog(this, "scope dude", "Wach out!", 0);
+//                        JOptionPane.showMessageDialog(this, "scope dude", "Watch out!", 0);
 //                    else    
-//                        JOptionPane.showMessageDialog(this, "):", "Wach out!", 0);
+//                        JOptionPane.showMessageDialog(this, "):", "Watch out!", 0);
                     txtOutput.setText("");
                     txtOutput.append(al.imprimirErrores() + "\n ---------------------------------------\n");
                     txtOutput.append("Se han encontrado " + scanner.contadorErroresLexicos + " errores lexicos\n");
@@ -400,7 +364,53 @@ public class compi extends javax.swing.JFrame {
                     String assemblyName=currentFile.getPath().replace(".adb", ".asm");
                     //txtOutput.append(ls.getErrores().toString());
                     
-                    txtOutput.append(String.format("Generados %d cuadruplos:\n",parsed.icode.size()));
+                    txtOutput.append(String.format("Cuadruplos generados:\n",parsed.icode.size()));
+					for(int i=0; i< parsed.icode.size(); i++){
+						txtOutput.append(String.format("%d\t%s\n", i, parsed.icode.get(i)));
+					}
+					txtOutput.append("Tabla de símbolos:\n");
+					txtOutput.append(parsed.table.toString());
+                    
+                    ParserCodegen backend=new ParserCodegen(parsed.icode, parsed.table, false);
+                    backend.assemble(assemblyName);
+                } catch (FileNotFoundException ex) {
+                    System.err.println(ex.getMessage());
+                } catch (Exception e){
+                    System.err.println(e.getMessage());
+                }
+            }
+        }
+        else{
+            try {
+                    lexer scanner = new lexer(new FileInputStream(currentFile));
+                    al = new Analizador(scanner);
+                    //als = new AnalizadorSemantic(scanner);
+                    al.parse();
+                    //als.parse();
+                    
+//                    if(als.action_obj.currentScope != null)
+//                        JOptionPane.showMessageDialog(this, "scope dude", "Watch out!", 0);
+//                    else    
+//                        JOptionPane.showMessageDialog(this, "):", "Watch out!", 0);
+                    txtOutput.setText("");
+                    txtOutput.append(al.imprimirErrores() + "\n ---------------------------------------\n");
+                    txtOutput.append("Se han encontrado " + scanner.contadorErroresLexicos + " errores lexicos\n");
+                    txtOutput.append(scanner.erroresLexicos);
+                    txtOutput.append("Fin de analisis " + "\n ---------------------------------------\n");
+                    
+                    //semantico
+                    Object res;
+                    LexerSemantic lss = new LexerSemantic(new FileInputStream(currentFile));
+                    ls = new parserSemantic(lss);
+                    res = ls.parse().value;
+                    
+                    //asumiendo esta bueno
+                    FrontEndResult parsed;
+                    parsed=(FrontEndResult)res;
+                    String assemblyName=currentFile.getPath().replace(".adb", ".asm");
+                    //txtOutput.append(ls.getErrores().toString());
+                    
+                    txtOutput.append(String.format("Cuadruplos generados:\n",parsed.icode.size()));
 					for(int i=0; i< parsed.icode.size(); i++){
 						txtOutput.append(String.format("%d\t%s\n", i, parsed.icode.get(i)));
 					}
@@ -410,7 +420,7 @@ public class compi extends javax.swing.JFrame {
                     ParserCodegen backend=new ParserCodegen(parsed.icode, parsed.table, false);
                     backend.assemble(assemblyName);
                 } catch (Exception e){
-                    JOptionPane.showMessageDialog(this, "ERROR: El archivo que desea analizar no existe", "Wach out!", 0);
+                    JOptionPane.showMessageDialog(this, "ERROR: El archivo que desea analizar no existe", "Watch out!", 0);
                     e.printStackTrace();
                 }
         }
@@ -421,8 +431,9 @@ public class compi extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLimpiarOutputActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-        if(null != currentFile)
+        if(null != currentFile) {
             guardarArchivo();
+        }
         else{
             JFileChooser fc = new JFileChooser();
             FileNameExtensionFilter ff = new FileNameExtensionFilter("Archivos de ADA(*.adb)", "adb");
@@ -435,7 +446,7 @@ public class compi extends javax.swing.JFrame {
                         f.createNewFile();
                         guardarArchivo(f, true);
                     } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(this, "ERROR: no se guardar el archivo.", "Wach out!", 3);
+                        JOptionPane.showMessageDialog(this, "ERROR: no se guardar el archivo.", "Watch out!", 3);
                     }
                 }else{
                     guardarArchivo(f, false);
@@ -457,7 +468,7 @@ public class compi extends javax.swing.JFrame {
                     f.createNewFile();
                     guardarArchivo(f, true);
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(this, "ERROR: no se guardar el archivo.", "Wach out!", 3);
+                    JOptionPane.showMessageDialog(this, "ERROR: no se guardar el archivo.", "Watch out!", 3);
                 }
             }else{
                 guardarArchivo(f, false);
@@ -485,19 +496,15 @@ public class compi extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(compi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(compi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(compi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException 
+                | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(compi.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new compi().setVisible(true);
             }
@@ -518,7 +525,6 @@ public class compi extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea txtOutput;
     // End of variables declaration//GEN-END:variables
-    private TextLineNumber tln;
     private JPanel internalPanel;
     private JTextPane localJTextPane;
     private JScrollPane localJScrollPane;
@@ -527,7 +533,6 @@ public class compi extends javax.swing.JFrame {
     private boolean hasChanged;
     private Analizador al;
     private parserSemantic ls;
-    private FileFilter ff;
 
 }
 

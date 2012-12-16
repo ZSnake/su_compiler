@@ -62,7 +62,6 @@ public class TempReg{
 		LinkedHashSet<String> difference=new LinkedHashSet<>(this.descriptor.keySet());
 		difference.removeAll(discarded);
 		HashSet<String> value;
-		//sólo buscar entre las que aún no han sido descartadas:
 		for(String key: difference){
 			value=this.descriptor.get(key);
 			if(value.isEmpty()) {

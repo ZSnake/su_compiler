@@ -1,5 +1,7 @@
 package Ada95_Codegen;
+
 import java.util.HashSet;
+
 public class TempSymbol{
 	public VarInfo info;
 	public HashSet<String> accessDescriptor;

@@ -1,11 +1,11 @@
 package Ada95_Codegen;
-/**Para representar los bloques básicos.*/
+
 public class BasicBlock{
 	public String label;
 	public int beginning;
 	public int end;
-	/**El prefijo por defecto para las etiquetas*/
 	public static final String defaultPrefix="label";
+        
 	public BasicBlock(){
 		this.label="";
 		this.beginning=0;
