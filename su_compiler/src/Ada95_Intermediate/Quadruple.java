@@ -10,7 +10,7 @@ public class Quadruple {
 	public String res;	
 	public HashMap<String, VarInfo> info;	
 	private void initInfo(){
-		this.info=new HashMap<String, VarInfo>();
+		this.info=new HashMap<>();
 		info.put("arg1", new VarInfo());
 		info.put("arg2", new VarInfo());
 		info.put("res", new VarInfo());
@@ -46,21 +46,27 @@ public class Quadruple {
 		this.res=res;
 		initInfo();
 	}	
+    @Override
 	public String  toString(){
 		String r=(!res.isEmpty()) ? res+":=" : "";
 		String a1=(!arg1.isEmpty()) ? arg1+" " : "";
 		String o= (!operador.isEmpty()) ? operador+ " " : "";
 		/*Para que el if se mire pinta: */
-		if(operador.contains("if"))
-			return operador.split("_")[0]+" "+arg1+" "+operador.split("_")[1]+" "+ arg2+" goto "+res;
-		else if(operador.contains(":="))
-			return res+" := "+ arg1;
-		else if(operador.equals("goto"))
-			return "goto "+res;
-		else if(operador.matches("put|call|param|glbl|function|return|initFunction"))
-			return operador+" "+ arg1+" "+arg2;
-		else if(operador.equals("get"))
-			return res+":= get "+arg1;
+		if(operador.contains("if")) {
+                    return operador.split("_")[0]+" "+arg1+" "+operador.split("_")[1]+" "+ arg2+" goto "+res;
+                }
+		else if(operador.contains(":=")) {
+                    return res+" := "+ arg1;
+                }
+		else if(operador.equals("goto")) {
+                    return "goto "+res;
+                }
+		else if(operador.matches("put|call|param|glbl|function|return|initFunction")) {
+                    return operador+" "+ arg1+" "+arg2;
+                }
+		else if(operador.equals("get")) {
+                    return res+":= get "+arg1;
+                }
 		return r+a1+o+arg2;
 	}
 }

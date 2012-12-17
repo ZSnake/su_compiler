@@ -2,7 +2,6 @@ package Ada95_Semantic;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import su_compiler.*;
 
 public class SymbolTable{
 	//Tabla para el scope actual
@@ -131,8 +130,9 @@ public class SymbolTable{
         
         public SymbolTable findChild(String id){
             for (SymbolTable child : children) {
-                if(child.id.equals(id))
+                if(child.id.equals(id)) {
                     return child;
+                }
             }
             return null;
         }
