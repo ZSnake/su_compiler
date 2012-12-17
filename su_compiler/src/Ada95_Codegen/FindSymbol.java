@@ -3,22 +3,22 @@ package Ada95_Codegen;
 import Ada95_Semantic.VariableSymbol;
 
 public class FindSymbol{
-	public int saltos;
+	public int jumps;
         
 	public VariableSymbol symbol;
 
 	public FindSymbol(){
-		saltos=0;
+		jumps=0;
 		symbol=null;
 	}
 
 	public FindSymbol(int s, VariableSymbol sym){
-		saltos=s;
+		jumps=s;
 		symbol=sym;
 	}
 
     @Override
 	public String toString(){
-		return String.format("%d {%s}", saltos, symbol);
+		return String.format("%d {%s}", jumps, symbol);
 	}
 } 

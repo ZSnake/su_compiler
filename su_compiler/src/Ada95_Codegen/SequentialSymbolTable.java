@@ -1,18 +1,23 @@
 package Ada95_Codegen;
+
 import Ada95_Semantic.*;
 import java.util.HashMap;
 import java.util.Map;
-public class FlatSymbolTable{
+
+public class SequentialSymbolTable{
+    
 	HashMap<String, VariableSymbol> table;
-	public FlatSymbolTable(){
+        
+	public SequentialSymbolTable(){
 		this.table=new HashMap<>();
 	}
         
-	public FlatSymbolTable(SymbolTable table){
+	public SequentialSymbolTable(SymbolTable table){
 		this.table=new HashMap<>();
-		pre_order_traverse(table);
+		Reorder(table);
 	}
-	private void pre_order_traverse(SymbolTable v){
+        
+	private void Reorder(SymbolTable v){
 		VariableSymbol val;
 		for(Map.Entry entry: v.getTable().entrySet()){
 			val=(VariableSymbol)entry.getValue();
@@ -22,7 +27,7 @@ public class FlatSymbolTable{
                         }
 		}
 		for(SymbolTable child: v.children) {
-                    pre_order_traverse(child);
+                    Reorder(child);
                 }
 	}
 
@@ -44,20 +49,17 @@ public class FlatSymbolTable{
 		StringBuilder finder=new StringBuilder(currentScope);
 		String lookup=currentScope;
 		VariableSymbol found=new VariableSymbol();
-		int q_depth=0;
+		int depth=0;
 		String l_key=lookup+"."+key;
 		for(int i=tokenized.length-1; i>=0; i--){
 			if ((found=this.table.get(l_key)) != null) {
                             break;
                         }
-			q_depth=tokenized.length-i;
+			depth=tokenized.length-i;
 			lookup=(i==0)? tokenized[i] : finder.substring(0, finder.lastIndexOf("_"+tokenized[i]));
 			l_key=lookup+"."+key;
 		}
-
-		int saltos;
-                saltos = q_depth;
-		return new FindSymbol(q_depth, found);	
+		return new FindSymbol(depth, found);
 	}
 	
 	public void put(String key, VariableSymbol sym){

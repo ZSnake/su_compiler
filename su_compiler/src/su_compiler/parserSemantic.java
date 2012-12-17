@@ -6,7 +6,7 @@
 
 package su_compiler;
 
-import Ada95_Codegen.*;
+import Ada95_Codegen.SequentialSymbolTable;
 import Ada95_Intermediate.*;
 import Ada95_Semantic.*;
 import java.util.ArrayList;
@@ -5581,7 +5581,7 @@ if(parser.errores.size() == 0){
 		}
 	}
 	if(currentScope != null){
-		FlatSymbolTable tabla=new FlatSymbolTable(currentScope);
+		SequentialSymbolTable tabla=new SequentialSymbolTable(currentScope);
 		RESULT=new FrontEndResult(cuadruplos, tabla);
 	}
 }else{

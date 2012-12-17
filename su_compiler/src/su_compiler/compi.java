@@ -364,14 +364,14 @@ public final class compi extends javax.swing.JFrame {
                     String assemblyName=currentFile.getPath().replace(".adb", ".asm");
                     //txtOutput.append(ls.getErrores().toString());
                     
-                    txtOutput.append(String.format("Cuadruplos generados:\n",parsed.icode.size()));
-					for(int i=0; i< parsed.icode.size(); i++){
-						txtOutput.append(String.format("%d\t%s\n", i, parsed.icode.get(i)));
+                    txtOutput.append(String.format("Cuadruplos generados:\n",parsed.quads.size()));
+					for(int i=0; i< parsed.quads.size(); i++){
+						txtOutput.append(String.format("%d\t%s\n", i, parsed.quads.get(i)));
 					}
 					txtOutput.append("Tabla de símbolos:\n");
-					txtOutput.append(parsed.table.toString());
+					txtOutput.append(parsed.sst.toString());
                     
-                    ParserCodegen backend=new ParserCodegen(parsed.icode, parsed.table, false);
+                    ParserCodegen backend=new ParserCodegen(parsed.quads, parsed.sst, false);
                     backend.assemble(assemblyName);
                 } catch (FileNotFoundException ex) {
                     System.err.println(ex.getMessage());
@@ -410,14 +410,14 @@ public final class compi extends javax.swing.JFrame {
                     String assemblyName=currentFile.getPath().replace(".adb", ".asm");
                     //txtOutput.append(ls.getErrores().toString());
                     
-                    txtOutput.append(String.format("Cuadruplos generados:\n",parsed.icode.size()));
-					for(int i=0; i< parsed.icode.size(); i++){
-						txtOutput.append(String.format("%d\t%s\n", i, parsed.icode.get(i)));
+                    txtOutput.append(String.format("Cuadruplos generados:\n",parsed.quads.size()));
+					for(int i=0; i< parsed.quads.size(); i++){
+						txtOutput.append(String.format("%d\t%s\n", i, parsed.quads.get(i)));
 					}
 					txtOutput.append("Tabla de símbolos:\n");
-					txtOutput.append(parsed.table.toString());
+					txtOutput.append(parsed.sst.toString());
                     
-                    ParserCodegen backend=new ParserCodegen(parsed.icode, parsed.table, false);
+                    ParserCodegen backend=new ParserCodegen(parsed.quads, parsed.sst, false);
                     backend.assemble(assemblyName);
                 } catch (Exception e){
                     JOptionPane.showMessageDialog(this, "ERROR: El archivo que desea analizar no existe", "Watch out!", 0);
