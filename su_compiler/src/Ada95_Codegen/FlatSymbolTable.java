@@ -35,10 +35,10 @@ public class FlatSymbolTable{
 		return s.toString();
 	}
 
-	public SymbolLookup get(String currentScope, String key){
+	public FindSymbol get(String currentScope, String key){
 		if (currentScope.isEmpty())
                 {
-			return new SymbolLookup(0, this.table.get(key));
+			return new FindSymbol(0, this.table.get(key));
                 }
 		String[] tokenized=currentScope.split("_");
 		StringBuilder finder=new StringBuilder(currentScope);
@@ -57,7 +57,7 @@ public class FlatSymbolTable{
 
 		int saltos;
                 saltos = q_depth;
-		return new SymbolLookup(q_depth, found);	
+		return new FindSymbol(q_depth, found);	
 	}
 	
 	public void put(String key, VariableSymbol sym){

@@ -41,7 +41,7 @@ public class ParserCodegen{
 	private final static String EPILOGUED="exit";
 	private final static String IN_STACK="-?([0-9])?+\\(\\$[sf]p\\)";
 	private final static String COPY=":=";
-	public final static int  WORD_LENGTH=4;
+	public final static int WORD_LENGTH=4;
 
 	/*MAPAS DE OPERACIONES:*/
 	public HashMap<String, String> BRANCH_OPERATIONS;
@@ -192,6 +192,7 @@ public class ParserCodegen{
 			}
 			//llenar lo de los temporales:
 			if(instruction.res.matches(FE_TEMP)){
+                            // creo que aqui esta el error de temporales
 				this.frontEndTemps.put(instruction.res, new TempSymbol(new VarInfo(false, UNUSED)));
 			}
 		}
@@ -222,7 +223,7 @@ public class ParserCodegen{
 				if(var.matches(FE_TEMP)){
 					this.frontEndTemps.put(var, new TempSymbol(new VarInfo(isAlive, nextUse)));
 				}else{
-					SymbolLookup t=this.st.get(currentScope, var);
+					FindSymbol t=this.st.get(currentScope, var);
 					sym=(t==null)?null:t.symbol;
 					if(sym != null){
 						sym.isAlive=isAlive;
@@ -239,7 +240,7 @@ public class ParserCodegen{
 				if(var.matches(FE_TEMP)){
 					return this.frontEndTemps.get(var).info;
 				}else{
-					SymbolLookup t=this.st.get(currentScope, var);
+					FindSymbol t=this.st.get(currentScope, var);
 					sym=(t==null)?null:t.symbol;
 					if(sym != null){
 						return new VarInfo(sym.isAlive, sym.nextUse);
@@ -284,7 +285,7 @@ public class ParserCodegen{
 							temp
 						);
 					}else{//es una variable normal					
-						SymbolLookup t=this.st.get(currentScope, dir.getValue().toString());
+						FindSymbol t=this.st.get(currentScope, dir.getValue().toString());
 						var=(t==null)?null:t.symbol;
 						if(var != null){
 							instruction.info.put(
@@ -337,11 +338,12 @@ public class ParserCodegen{
 			//saltárselo si está vacío:
 			if(value.isEmpty()){retVal.put(key, ""); continue;}
 			if(!value.matches(NOT_REGISTRABLE) && 
-				!(value.matches(INTEGER_LITERAL) && (key.equals("z") || key.equals("x")))){
+				!(value.matches(INTEGER_LITERAL) && this.st.get(currentScope, value).symbol != null
+                                && (key.equals("z") || key.equals("x")))){
 				//1. Ver si YA está en un registro.
 				if(value.matches(FE_TEMP)){//es un temporal
 					accessDescriptor=this.frontEndTemps.get(value).accessDescriptor;
-				}else if(!value.matches(INTEGER_LITERAL) && this.st.get(currentScope, value).symbol != null){
+				}else if(!value.matches(INTEGER_LITERAL)){
                                         accessDescriptor=this.st.get(currentScope, value).symbol.accessDescriptor;
 				}	
 				for(String place: accessDescriptor){
@@ -755,7 +757,12 @@ public class ParserCodegen{
 				data.append(String.format("%s: .asciiz %s\n", message, instruction.arg2));
 				text.append(String.format("\tla $a0, %s\n\tsyscall\n", message));
 			}else{
-				text.append(String.format("\tmove $a0, %s\n\tsyscall\n", rz));
+                            if (rz.matches("[0-9]+")){
+				text.append(String.format("\tli $a0, %s\n\tsyscall\n", rz));
+                            }
+                            else{
+                                text.append(String.format("\tmove $a0, %s\n\tsyscall\n", rz));
+                            }
 			}
 							
 		}else if(operador.matches("get")){
